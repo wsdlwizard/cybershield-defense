@@ -650,7 +650,7 @@ function showBanner(text) {
 
 function showTip() {
   const el = $('tip');
-  el.textContent = TIPS[Math.floor(Math.random() * TIPS.length)];
+  el.textContent = 'Top tip! ' + TIPS[Math.floor(Math.random() * TIPS.length)];
   el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 5000);
 }
