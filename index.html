@@ -103,6 +103,7 @@ html, body {
 .hud-item { text-align: center; }
 .hud-label { font-size: 9px; color: #4a5580; text-transform: uppercase; letter-spacing: 1px; }
 .hud-val { font-size: 18px; font-weight: 800; color: #00ff88; }
+.hud-val.warn { color: #ffaa00; }
 .hud-val.red { color: #ff6b6b; }
 .hud-lvl {
   background: linear-gradient(135deg, rgba(0,255,136,0.15), rgba(0,170,255,0.15));
@@ -113,6 +114,21 @@ html, body {
 .progress-fill {
   height: 100%; width: 0%; transition: width 0.3s;
   background: linear-gradient(90deg, #00ff88, #00aaff);
+}
+
+/* ── Timer bar ──────────────────────────────────────────────────────── */
+.timer-bar {
+  width: 100%; height: 4px; background: rgba(255,255,255,0.05); flex-shrink: 0;
+}
+.timer-fill {
+  height: 100%; width: 100%; transition: width 1s linear;
+  background: linear-gradient(90deg, #00ff88, #00aaff);
+}
+.timer-fill.warn { background: linear-gradient(90deg, #ffaa00, #ff6b6b); }
+.timer-fill.danger { background: linear-gradient(90deg, #ff6b6b, #ff3333); animation: timerPulse 0.5s ease infinite; }
+@keyframes timerPulse {
+  0%,100% { opacity: 1; }
+  50% { opacity: 0.6; }
 }
 
 /* ── Board ───────────────────────────────────────────────────────────── */
@@ -131,23 +147,63 @@ html, body {
   display: flex; align-items: center; justify-content: center;
   position: relative;
   border: 1px solid rgba(0,255,136,0.04);
-  transition: transform 0.12s ease;
 }
 .cell .emoji {
   font-size: 28px;
   line-height: 1;
-  transition: opacity 0.2s, transform 0.25s;
+  transition: opacity 0.15s ease, transform 0.15s ease;
   will-change: transform, opacity;
 }
 .cell.selected { background: rgba(0,255,136,0.12); box-shadow: inset 0 0 0 2px #00ff88; border-radius: 6px; }
-.cell.matched .emoji { opacity: 0; transform: scale(0.3); }
-.cell.falling .emoji {
-  animation: fallIn 0.35s ease-out forwards;
+
+/* ── Swap animation ─────────────────────────────────────────────────── */
+.cell.swap-right .emoji { animation: swapRight 0.2s ease forwards; }
+.cell.swap-left .emoji { animation: swapLeft 0.2s ease forwards; }
+.cell.swap-down .emoji { animation: swapDown 0.2s ease forwards; }
+.cell.swap-up .emoji { animation: swapUp 0.2s ease forwards; }
+@keyframes swapRight { 0% { transform: translateX(-100%); } 100% { transform: translateX(0); } }
+@keyframes swapLeft  { 0% { transform: translateX(100%); }  100% { transform: translateX(0); } }
+@keyframes swapDown  { 0% { transform: translateY(-100%); } 100% { transform: translateY(0); } }
+@keyframes swapUp    { 0% { transform: translateY(100%); }  100% { transform: translateY(0); } }
+
+/* ── Match animation (shrink + glow) ────────────────────────────────── */
+.cell.matched .emoji {
+  animation: matchPop 0.35s ease forwards;
 }
-@keyframes fallIn {
-  from { transform: translateY(-100%); opacity: 0.5; }
-  to { transform: translateY(0); opacity: 1; }
+@keyframes matchPop {
+  0% { transform: scale(1); opacity: 1; }
+  30% { transform: scale(1.3); opacity: 1; filter: brightness(2); }
+  100% { transform: scale(0); opacity: 0; }
 }
+
+/* ── Gravity / falling animation (distance-based) ───────────────────── */
+.cell.fall-1 .emoji { animation: fall1 0.25s ease-in forwards; }
+.cell.fall-2 .emoji { animation: fall2 0.30s ease-in forwards; }
+.cell.fall-3 .emoji { animation: fall3 0.35s ease-in forwards; }
+.cell.fall-4 .emoji { animation: fall4 0.38s ease-in forwards; }
+.cell.fall-5 .emoji { animation: fall5 0.40s ease-in forwards; }
+.cell.fall-6 .emoji { animation: fall6 0.42s ease-in forwards; }
+.cell.fall-7 .emoji { animation: fall7 0.44s ease-in forwards; }
+.cell.fall-8 .emoji { animation: fall8 0.46s ease-in forwards; }
+@keyframes fall1 { from { transform: translateY(-100%); opacity:0.7; } to { transform: translateY(0); opacity:1; } }
+@keyframes fall2 { from { transform: translateY(-200%); opacity:0.7; } to { transform: translateY(0); opacity:1; } }
+@keyframes fall3 { from { transform: translateY(-300%); opacity:0.7; } to { transform: translateY(0); opacity:1; } }
+@keyframes fall4 { from { transform: translateY(-400%); opacity:0.6; } to { transform: translateY(0); opacity:1; } }
+@keyframes fall5 { from { transform: translateY(-500%); opacity:0.6; } to { transform: translateY(0); opacity:1; } }
+@keyframes fall6 { from { transform: translateY(-600%); opacity:0.5; } to { transform: translateY(0); opacity:1; } }
+@keyframes fall7 { from { transform: translateY(-700%); opacity:0.5; } to { transform: translateY(0); opacity:1; } }
+@keyframes fall8 { from { transform: translateY(-800%); opacity:0.5; } to { transform: translateY(0); opacity:1; } }
+
+/* ── Landing bounce ─────────────────────────────────────────────────── */
+.cell.landed .emoji {
+  animation: landBounce 0.2s ease-out forwards;
+}
+@keyframes landBounce {
+  0% { transform: scaleY(0.8) scaleX(1.1); }
+  50% { transform: scaleY(1.08) scaleX(0.95); }
+  100% { transform: scaleY(1) scaleX(1); }
+}
+
 .cell.invalid { animation: shake 0.3s ease; }
 @keyframes shake {
   0%,100% { transform: translateX(0); }
@@ -223,8 +279,8 @@ html, body {
   <div class="howto-step"><div class="howto-icon">👆</div><div class="howto-text"><strong>Swipe</strong> an icon in any direction to swap it with its neighbour</div></div>
   <div class="howto-step"><div class="howto-icon">3️⃣</div><div class="howto-text"><strong>Match 3+</strong> identical icons in a row or column to clear them</div></div>
   <div class="howto-step"><div class="howto-icon">⚡</div><div class="howto-text"><strong>Chain combos!</strong> Cascading matches multiply your score</div></div>
-  <div class="howto-step"><div class="howto-icon">🚀</div><div class="howto-text"><strong>Level up</strong> by hitting the target score to earn bonus moves</div></div>
-  <div class="howto-step"><div class="howto-icon">⏳</div><div class="howto-text"><strong>Moves are limited</strong> — think carefully before each swipe!</div></div>
+  <div class="howto-step"><div class="howto-icon">🚀</div><div class="howto-text"><strong>Level up</strong> by hitting the target score for bonus time</div></div>
+  <div class="howto-step"><div class="howto-icon">⏱️</div><div class="howto-text"><strong>5-minute timer</strong> — score as many points as you can before time runs out!</div></div>
   <button class="btn btn-play" id="btn-start" style="margin-top:12px">🛡️ START GAME</button>
 </div>
 
@@ -233,9 +289,10 @@ html, body {
   <div class="hud">
     <div class="hud-item"><div class="hud-label">Score</div><div class="hud-val" id="h-score">0</div></div>
     <div class="hud-item hud-lvl"><div class="hud-label">Level</div><div class="hud-val" id="h-level">1</div></div>
-    <div class="hud-item"><div class="hud-label">Moves</div><div class="hud-val" id="h-moves">30</div></div>
-    <div class="hud-item"><div class="hud-label">Combo</div><div class="hud-val red" id="h-combo">x1</div></div>
+    <div class="hud-item"><div class="hud-label">Time</div><div class="hud-val" id="h-time">5:00</div></div>
+    <div class="hud-item"><div class="hud-label">Combo</div><div class="hud-val" id="h-combo">x1</div></div>
   </div>
+  <div class="timer-bar"><div class="timer-fill" id="timer-fill"></div></div>
   <div class="progress"><div class="progress-fill" id="prog"></div></div>
   <div class="board-wrap"><div class="board" id="board"></div></div>
   <div class="tip" id="tip"></div>
@@ -243,14 +300,15 @@ html, body {
 
 <!-- GAME OVER -->
 <div id="gameover-screen" class="screen">
-  <div class="go-title">THREAT DETECTED</div>
-  <div class="go-sub">Your shields are depleted!</div>
+  <div class="go-title">TIME'S UP!</div>
+  <div class="go-sub">Your shields have expired!</div>
   <div class="go-score" id="go-score">0</div>
   <div class="go-score-label">THREATS NEUTRALISED</div>
   <div class="go-stats">
     <div class="go-stat"><div class="go-stat-val" id="go-level">1</div><div class="go-stat-lbl">Level</div></div>
     <div class="go-stat"><div class="go-stat-val" id="go-combo">1</div><div class="go-stat-lbl">Best Combo</div></div>
     <div class="go-stat"><div class="go-stat-val" id="go-matches">0</div><div class="go-stat-lbl">Matches</div></div>
+    <div class="go-stat"><div class="go-stat-val" id="go-time">0:00</div><div class="go-stat-lbl">Time Played</div></div>
   </div>
   <button class="btn btn-play" id="btn-retry">🔄 PLAY AGAIN</button>
 </div>
@@ -259,12 +317,13 @@ html, body {
 
 <script>
 // ═════════════════════════════════════════════════════════════════════
-// CyberShield Defense v2 — DOM-based Match-3
+// CyberShield Defense v3 — Timer + Smooth Animations
 // ═════════════════════════════════════════════════════════════════════
 (() => {
 const COLS = 7, ROWS = 8;
 const ICONS = ['🛡️','🔒','🔑','🔥'];
 const ICONS_EXTRA = ['🐛','💀'];
+const GAME_DURATION = 300; // 5 minutes in seconds
 const TIPS = [
   "🛡️ Use a unique password for every account",
   "🔒 Enable two-factor authentication everywhere",
@@ -276,10 +335,12 @@ const TIPS = [
   "🔥 Review app permissions on your phone",
 ];
 
-let grid, score, level, moves, combo, maxCombo, totalMatches;
+let grid, score, level, combo, maxCombo, totalMatches;
 let targetScore, animating, selectedCell, tipTimer;
 let touchStartX, touchStartY, touchStartCell;
 let cellSize;
+let timeRemaining, timerInterval, gameStartTime;
+let gameOver = false;
 
 const $ = id => document.getElementById(id);
 const board = $('board');
@@ -295,19 +356,55 @@ $('btn-retry').onclick = startGame;
 
 // ── Init ──
 function startGame() {
-  score = 0; level = 1; moves = 30; combo = 0; maxCombo = 0;
+  score = 0; level = 1; combo = 0; maxCombo = 0;
   totalMatches = 0; targetScore = 500; animating = false; selectedCell = null;
+  timeRemaining = GAME_DURATION; gameOver = false;
+  gameStartTime = Date.now();
   showScreen('game-screen');
   sizeBoardAndBuild();
   window.onresize = sizeBoardAndBuild;
+  // Start timer
+  clearInterval(timerInterval);
+  timerInterval = setInterval(tickTimer, 1000);
+  // Tips
   clearInterval(tipTimer);
   tipTimer = setInterval(showTip, 18000);
   setTimeout(showTip, 4000);
+  updateHUD();
+}
+
+function tickTimer() {
+  if (gameOver) return;
+  timeRemaining--;
+  updateHUD();
+
+  // Timer bar
+  const pct = (timeRemaining / GAME_DURATION) * 100;
+  const fill = $('timer-fill');
+  fill.style.width = pct + '%';
+  fill.classList.remove('warn', 'danger');
+  if (pct <= 10) fill.classList.add('danger');
+  else if (pct <= 25) fill.classList.add('warn');
+
+  // Warnings
+  if (timeRemaining === 60) showBanner('⚠️ 1 MINUTE LEFT!');
+  if (timeRemaining === 30) showBanner('⏱️ 30 SECONDS!');
+  if (timeRemaining === 10) showBanner('🔥 HURRY! 10s!');
+
+  if (timeRemaining <= 0) {
+    endGame();
+  }
+}
+
+function formatTime(secs) {
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return m + ':' + (s < 10 ? '0' : '') + s;
 }
 
 function sizeBoardAndBuild() {
   const maxW = Math.min(window.innerWidth - 8, 420);
-  const maxH = window.innerHeight - 90;
+  const maxH = window.innerHeight - 100;
   cellSize = Math.floor(Math.min(maxW / COLS, maxH / ROWS));
   board.style.gridTemplateColumns = `repeat(${COLS}, ${cellSize}px)`;
   board.style.gridTemplateRows = `repeat(${ROWS}, ${cellSize}px)`;
@@ -337,7 +434,6 @@ function initGrid() {
       grid[r][c] = randIcon();
     }
   }
-  // Remove pre-existing matches
   let clean = false;
   while (!clean) {
     clean = true;
@@ -409,7 +505,7 @@ function cellFromEvent(e) {
 
 function onTouchStart(e) {
   e.preventDefault();
-  if (animating) return;
+  if (animating || gameOver) return;
   const cell = cellFromEvent(e);
   if (!cell) return;
   const t = e.touches[0];
@@ -419,12 +515,12 @@ function onTouchStart(e) {
 }
 function onTouchEnd(e) {
   e.preventDefault();
-  if (animating || !touchStartCell) return;
+  if (animating || !touchStartCell || gameOver) return;
   const t = e.changedTouches[0];
   handleSwipe(t.clientX - touchStartX, t.clientY - touchStartY);
 }
 function onMouseDown(e) {
-  if (animating) return;
+  if (animating || gameOver) return;
   const cell = cellFromEvent(e);
   if (!cell) return;
   touchStartX = e.clientX; touchStartY = e.clientY;
@@ -432,7 +528,7 @@ function onMouseDown(e) {
   selectCell(cell.r, cell.c);
 }
 function onMouseUp(e) {
-  if (animating || !touchStartCell) return;
+  if (animating || !touchStartCell || gameOver) return;
   handleSwipe(e.clientX - touchStartX, e.clientY - touchStartY);
 }
 
@@ -457,11 +553,11 @@ function handleSwipe(dx, dy) {
   touchStartCell = null;
 
   if (tr < 0 || tr >= ROWS || tc < 0 || tc >= COLS) return;
-  trySwap(sr, sc, tr, tc);
+  trySwap(sr, sc, tr, tc, dr, dc);
 }
 
 // ── Swap & Match ──
-function trySwap(r1, c1, r2, c2) {
+function trySwap(r1, c1, r2, c2, dr, dc) {
   animating = true;
   combo = 0;
 
@@ -470,36 +566,48 @@ function trySwap(r1, c1, r2, c2) {
   grid[r1][c1] = grid[r2][c2];
   grid[r2][c2] = tmp;
 
-  // Swap visually
+  // Animate the swap visually
   updateCell(r1, c1);
   updateCell(r2, c2);
 
-  const matches = findAllMatches();
-  if (matches.length === 0) {
-    // Swap back
-    grid[r2][c2] = grid[r1][c1];
-    grid[r1][c1] = tmp;
-    updateCell(r1, c1);
-    updateCell(r2, c2);
-    // Shake
-    getCell(r1, c1)?.classList.add('invalid');
-    getCell(r2, c2)?.classList.add('invalid');
-    setTimeout(() => {
-      getCell(r1, c1)?.classList.remove('invalid');
-      getCell(r2, c2)?.classList.remove('invalid');
-      animating = false;
-    }, 300);
-    return;
-  }
+  // Add directional swap animation classes
+  const cell1 = getCell(r1, c1);
+  const cell2 = getCell(r2, c2);
+  if (dc === 1)       { cell1.classList.add('swap-right'); cell2.classList.add('swap-left'); }
+  else if (dc === -1) { cell1.classList.add('swap-left');  cell2.classList.add('swap-right'); }
+  else if (dr === 1)  { cell1.classList.add('swap-down');  cell2.classList.add('swap-up'); }
+  else if (dr === -1) { cell1.classList.add('swap-up');    cell2.classList.add('swap-down'); }
 
-  moves--;
-  updateHUD();
-  processMatches(matches);
+  setTimeout(() => {
+    // Remove swap classes
+    cell1.className = 'cell';
+    cell2.className = 'cell';
+
+    const matches = findAllMatches();
+    if (matches.length === 0) {
+      // Swap back
+      grid[r2][c2] = grid[r1][c1];
+      grid[r1][c1] = tmp;
+      updateCell(r1, c1);
+      updateCell(r2, c2);
+      // Shake
+      getCell(r1, c1)?.classList.add('invalid');
+      getCell(r2, c2)?.classList.add('invalid');
+      setTimeout(() => {
+        getCell(r1, c1)?.classList.remove('invalid');
+        getCell(r2, c2)?.classList.remove('invalid');
+        animating = false;
+      }, 300);
+      return;
+    }
+
+    updateHUD();
+    processMatches(matches);
+  }, 200);
 }
 
 function findAllMatches() {
   const matched = new Set();
-  // Horizontal
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS - 2; c++) {
       const t = grid[r][c];
@@ -510,7 +618,6 @@ function findAllMatches() {
       }
     }
   }
-  // Vertical
   for (let c = 0; c < COLS; c++) {
     for (let r = 0; r < ROWS - 2; r++) {
       const t = grid[r][c];
@@ -533,100 +640,119 @@ function processMatches(matches) {
   const pts = (matches.length * 10 + bonus) * combo;
   score += pts;
 
-  if (combo >= 2) showBanner(`⚡ ${combo}x COMBO! +${pts}`);
+  if (combo >= 2) showBanner('⚡ ' + combo + 'x COMBO! +' + pts);
   if (matches.length >= 5) showBanner('🛡️ SHIELD ACTIVATED!');
+
+  // Levelling up gives bonus time
+  if (score >= targetScore) {
+    level++;
+    timeRemaining = Math.min(timeRemaining + 30, GAME_DURATION); // +30s bonus, capped
+    targetScore = Math.floor(targetScore * 1.8);
+    showBanner('🚀 LEVEL ' + level + '! +30s');
+  }
   updateHUD();
 
-  // Animate matched cells disappearing
+  // Step 1: Animate matched cells (pop + glow)
   matches.forEach(idx => {
     const cell = board.children[idx];
-    if (cell) cell.classList.add('matched');
+    if (cell) {
+      cell.classList.add('matched');
+    }
   });
 
+  // Step 2: After match animation, apply gravity with distance-based fall
   setTimeout(() => {
-    // Clear matched
+    // Clear matched cells in grid
     matches.forEach(idx => {
       const r = Math.floor(idx / COLS), c = idx % COLS;
       grid[r][c] = null;
     });
 
-    // Gravity: drop pieces down
+    // Track how far each piece needs to fall per column
+    const fallDistances = {}; // key: "r,c" => distance fallen
+
     for (let c = 0; c < COLS; c++) {
       let writeRow = ROWS - 1;
+      const oldColumn = [];
+      for (let r = 0; r < ROWS; r++) oldColumn[r] = grid[r][c];
+
+      // Compact: move non-null pieces down
       for (let r = ROWS - 1; r >= 0; r--) {
         if (grid[r][c] !== null) {
-          grid[writeRow][c] = grid[r][c];
-          if (writeRow !== r) grid[r][c] = null;
+          if (writeRow !== r) {
+            grid[writeRow][c] = grid[r][c];
+            grid[r][c] = null;
+            fallDistances[writeRow + ',' + c] = writeRow - r;
+          }
           writeRow--;
         }
       }
-      // Fill empty cells at top
+      // Fill empty top cells with new icons
       for (let r = writeRow; r >= 0; r--) {
         grid[r][c] = randIcon();
+        // New pieces fall from above the board: distance = writeRow+1 rows down from top of empty space
+        fallDistances[r + ',' + c] = writeRow + 1 - r + (ROWS - 1 - writeRow);
       }
     }
 
-    // Re-render all cells and animate new ones
-    const fallingCells = [];
+    // Step 3: Update all cells and apply distance-based falling animation
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
         const idx = r * COLS + c;
         const cell = board.children[idx];
-        const emoji = cell.querySelector('.emoji');
         cell.className = 'cell';
+        const emoji = cell.querySelector('.emoji');
         emoji.textContent = grid[r][c];
-        // Mark cells that changed as falling
-        if (matches.includes(idx) || grid[r][c] !== emoji.textContent) {
-          fallingCells.push(idx);
+
+        const dist = fallDistances[r + ',' + c];
+        if (dist && dist > 0) {
+          const fallClass = 'fall-' + Math.min(dist, 8);
+          cell.classList.add(fallClass);
         }
       }
     }
 
-    // Add falling animation to affected columns
-    matches.forEach(idx => {
-      const c = idx % COLS;
-      for (let r = 0; r < ROWS; r++) {
-        const cellIdx = r * COLS + c;
-        const cell = board.children[cellIdx];
-        cell.classList.add('falling');
-      }
-    });
-
+    // Step 4: After fall animations finish, add landing bounce and check cascades
+    const maxFallTime = 460; // max fall animation duration
     setTimeout(() => {
-      // Remove falling class
-      board.querySelectorAll('.falling').forEach(el => el.classList.remove('falling'));
-
-      // Check for cascading matches
-      const newMatches = findAllMatches();
-      if (newMatches.length > 0) {
-        processMatches(newMatches);
-      } else {
-        checkLevelUp();
-        board.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
-        animating = false;
-        if (moves <= 0) endGame();
+      // Add landing bounce to cells that just fell
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          const cell = getCell(r, c);
+          const hasFall = [...cell.classList].some(cl => cl.startsWith('fall-'));
+          if (hasFall) {
+            cell.className = 'cell landed';
+          }
+        }
       }
-    }, 350);
-  }, 250);
+
+      // Brief bounce, then check for cascading matches
+      setTimeout(() => {
+        board.querySelectorAll('.landed').forEach(el => el.classList.remove('landed'));
+
+        const newMatches = findAllMatches();
+        if (newMatches.length > 0) {
+          processMatches(newMatches);
+        } else {
+          board.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+          animating = false;
+        }
+      }, 200);
+    }, maxFallTime);
+  }, 350); // match pop animation duration
 }
 
 // ── Game Logic ──
-function checkLevelUp() {
-  if (score >= targetScore) {
-    level++;
-    moves += 10 + Math.floor(level * 1.5);
-    targetScore = Math.floor(targetScore * 1.8);
-    showBanner(`🚀 LEVEL ${level}!`);
-    updateHUD();
-  }
-}
-
 function endGame() {
+  gameOver = true;
+  clearInterval(timerInterval);
   clearInterval(tipTimer);
+  const elapsed = Math.floor((Date.now() - gameStartTime) / 1000);
   $('go-score').textContent = score.toLocaleString();
   $('go-level').textContent = level;
   $('go-combo').textContent = maxCombo + 'x';
   $('go-matches').textContent = totalMatches;
+  $('go-time').textContent = formatTime(Math.min(elapsed, GAME_DURATION));
   try { if (window.TelegramGameProxy) window.TelegramGameProxy.shareScore(); } catch(e) {}
   setTimeout(() => showScreen('gameover-screen'), 500);
 }
@@ -635,9 +761,15 @@ function endGame() {
 function updateHUD() {
   $('h-score').textContent = score.toLocaleString();
   $('h-level').textContent = level;
-  $('h-moves').textContent = moves;
+  $('h-time').textContent = formatTime(timeRemaining);
   $('h-combo').textContent = 'x' + Math.max(combo, 1);
   $('prog').style.width = Math.min(100, (score / targetScore) * 100) + '%';
+
+  // Color the time display when running low
+  const timeEl = $('h-time');
+  timeEl.classList.remove('warn', 'red');
+  if (timeRemaining <= 30) timeEl.classList.add('red');
+  else if (timeRemaining <= 60) timeEl.classList.add('warn');
 }
 
 function showBanner(text) {
