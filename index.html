@@ -179,6 +179,44 @@ canvas#gameCanvas {
 .stat-value { font-size: 24px; font-weight: 700; color: #00aaff; }
 .stat-label { font-size: 11px; color: #4a5580; }
 
+/* ── How To Play Screen ──────────────────────────────────────────────── */
+#howto-screen {
+  background: rgba(10,14,39,0.97); backdrop-filter: blur(20px);
+}
+.howto-title {
+  font-size: 24px; font-weight: 800; margin-bottom: 20px;
+  background: linear-gradient(135deg, #00ff88, #00aaff);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.howto-steps {
+  max-width: 340px; width: 100%; text-align: left;
+}
+.howto-step {
+  display: flex; align-items: flex-start; gap: 14px;
+  margin-bottom: 18px;
+}
+.howto-icon {
+  font-size: 28px; min-width: 40px; text-align: center;
+  line-height: 1.2;
+}
+.howto-text {
+  font-size: 14px; color: #b0bce0; line-height: 1.5;
+}
+.howto-text strong {
+  color: #00ff88; font-weight: 700;
+}
+.howto-pieces {
+  display: flex; justify-content: center; gap: 8px;
+  margin: 16px 0 24px; font-size: 28px;
+}
+.howto-piece {
+  width: 44px; height: 44px; display: flex; align-items: center;
+  justify-content: center; border-radius: 10px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(0,255,136,0.15);
+}
+
 /* ── Cyber Tip Overlay ───────────────────────────────────────────────── */
 .cyber-tip {
   position: fixed; bottom: 0; left: 0; width: 100%;
@@ -207,10 +245,46 @@ canvas#gameCanvas {
   <div class="splash-logo">🛡️</div>
   <div class="splash-title">CYBERSHIELD</div>
   <div class="splash-subtitle">D E F E N S E</div>
-  <button class="btn btn-primary" onclick="Game.start()">▶ PLAY</button>
+  <button class="btn btn-primary" onclick="showScreen('howto-screen')">▶ PLAY</button>
   <div class="splash-powered">
     Match cybersecurity icons to neutralise threats!
   </div>
+</div>
+
+<!-- ═══════════════ HOW TO PLAY SCREEN ═══════════════ -->
+<div id="howto-screen" class="screen">
+  <div class="howto-title">HOW TO PLAY</div>
+  <div class="howto-pieces">
+    <div class="howto-piece">🛡️</div>
+    <div class="howto-piece">🔒</div>
+    <div class="howto-piece">🔑</div>
+    <div class="howto-piece">🔥</div>
+    <div class="howto-piece">🐛</div>
+    <div class="howto-piece">💀</div>
+  </div>
+  <div class="howto-steps">
+    <div class="howto-step">
+      <div class="howto-icon">👆</div>
+      <div class="howto-text"><strong>Swipe</strong> icons in any direction to swap them with their neighbour</div>
+    </div>
+    <div class="howto-step">
+      <div class="howto-icon">3️⃣</div>
+      <div class="howto-text"><strong>Match 3+</strong> identical icons in a row or column to clear them and score points</div>
+    </div>
+    <div class="howto-step">
+      <div class="howto-icon">⚡</div>
+      <div class="howto-text"><strong>Chain combos!</strong> Cascading matches multiply your score — aim for big chains</div>
+    </div>
+    <div class="howto-step">
+      <div class="howto-icon">🚀</div>
+      <div class="howto-text"><strong>Level up</strong> by hitting the target score. Each level adds moves and unlocks new icons</div>
+    </div>
+    <div class="howto-step">
+      <div class="howto-icon">⏳</div>
+      <div class="howto-text"><strong>Moves are limited!</strong> Think carefully — when you run out, the game ends</div>
+    </div>
+  </div>
+  <button class="btn btn-primary" onclick="Game.start()" style="margin-top: 8px;">🛡️ START GAME</button>
 </div>
 
 <!-- ═══════════════ GAME SCREEN ═══════════════ -->
@@ -830,8 +904,11 @@ const Game = (() => {
   }
 
   // ── Public API ─────────────────────────────────────────────────────────
-  return { start };
+  return { start, showScreen };
 })();
+
+// Global helper so HTML onclick can reach it
+function showScreen(id) { Game.showScreen(id); }
 </script>
 </body>
 </html>
