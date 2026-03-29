@@ -5,9 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>CyberShield Defense</title>
 <style>
-/* ── Reset & Base ────────────────────────────────────────────────────── */
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body {
+html, body {
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   background: #0a0e27;
   color: #e0e6ff;
@@ -15,243 +14,204 @@ body {
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
-  height: 100vh;
-  width: 100vw;
+  height: 100%; width: 100%;
 }
 
-/* ── Animated Background ─────────────────────────────────────────────── */
+/* ── Background ──────────────────────────────────────────────────────── */
 .bg-grid {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
   background:
     linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
   background-size: 40px 40px;
-  animation: gridScroll 20s linear infinite;
   pointer-events: none; z-index: 0;
-}
-@keyframes gridScroll {
-  to { background-position: 40px 40px; }
 }
 
 /* ── Screens ─────────────────────────────────────────────────────────── */
 .screen {
-  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
   display: none; flex-direction: column; align-items: center;
-  justify-content: center; z-index: 10; padding: 20px;
+  justify-content: center; z-index: 10; padding: 16px;
 }
 .screen.active { display: flex; }
 
-/* ── Splash / Loading Screen ─────────────────────────────────────────── */
-#splash-screen {
-  background: radial-gradient(ellipse at center, #0f1538 0%, #0a0e27 70%);
-}
+/* ── Splash Screen ───────────────────────────────────────────────────── */
+#splash-screen { background: radial-gradient(ellipse at center, #0f1538 0%, #0a0e27 70%); }
 .splash-logo {
-  width: 120px; height: 120px; margin-bottom: 24px;
+  width: 100px; height: 100px; margin-bottom: 20px;
   background: linear-gradient(135deg, #00ff88, #00aaff);
-  border-radius: 24px; display: flex; align-items: center;
-  justify-content: center; font-size: 56px;
+  border-radius: 22px; display: flex; align-items: center;
+  justify-content: center; font-size: 50px;
   box-shadow: 0 0 40px rgba(0,255,136,0.3);
-  animation: logoPulse 2s ease-in-out infinite;
+  animation: pulse 2s ease-in-out infinite;
 }
-@keyframes logoPulse {
-  0%, 100% { transform: scale(1); box-shadow: 0 0 40px rgba(0,255,136,0.3); }
-  50% { transform: scale(1.05); box-shadow: 0 0 60px rgba(0,255,136,0.5); }
+@keyframes pulse {
+  0%,100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
 }
 .splash-title {
-  font-size: 28px; font-weight: 800; letter-spacing: 2px;
+  font-size: 26px; font-weight: 800; letter-spacing: 2px;
   background: linear-gradient(135deg, #00ff88, #00aaff);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  background-clip: text; margin-bottom: 8px;
+  background-clip: text; margin-bottom: 6px;
 }
-.splash-subtitle {
-  font-size: 14px; color: #6b7db3; margin-bottom: 32px;
+.splash-sub { font-size: 13px; color: #6b7db3; margin-bottom: 28px; }
+
+/* ── How To Play ─────────────────────────────────────────────────────── */
+#howto-screen { background: rgba(10,14,39,0.97); }
+.howto-title {
+  font-size: 22px; font-weight: 800; margin-bottom: 16px;
+  color: #00ff88;
 }
-.splash-powered {
-  font-size: 12px; color: #4a5580; margin-top: 40px;
+.howto-pieces {
+  display: flex; gap: 6px; margin-bottom: 18px; font-size: 26px;
 }
+.howto-piece {
+  width: 40px; height: 40px; display: flex; align-items: center;
+  justify-content: center; border-radius: 8px;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(0,255,136,0.15);
+}
+.howto-step {
+  display: flex; align-items: flex-start; gap: 12px;
+  margin-bottom: 14px; max-width: 320px;
+}
+.howto-icon { font-size: 24px; min-width: 36px; text-align: center; }
+.howto-text { font-size: 13px; color: #b0bce0; line-height: 1.4; }
+.howto-text strong { color: #00ff88; }
+
+/* ── Buttons ─────────────────────────────────────────────────────────── */
 .btn {
-  padding: 14px 40px; border: none; border-radius: 12px;
-  font-size: 18px; font-weight: 700; cursor: pointer;
+  padding: 12px 36px; border: none; border-radius: 12px;
+  font-size: 17px; font-weight: 700; cursor: pointer;
   transition: all 0.2s; letter-spacing: 1px;
 }
-.btn-primary {
+.btn-play {
   background: linear-gradient(135deg, #00ff88, #00cc6a);
-  color: #0a0e27;
-  box-shadow: 0 4px 20px rgba(0,255,136,0.4);
+  color: #0a0e27; box-shadow: 0 4px 20px rgba(0,255,136,0.4);
 }
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 30px rgba(0,255,136,0.6);
-}
-.btn-secondary {
-  background: rgba(255,255,255,0.08); color: #00ff88;
-  border: 1px solid rgba(0,255,136,0.3);
-  padding: 10px 28px; font-size: 14px; margin-top: 12px;
-}
-.btn-secondary:hover {
-  background: rgba(0,255,136,0.1);
-}
+.btn-play:active { transform: scale(0.97); }
 
 /* ── HUD ─────────────────────────────────────────────────────────────── */
-#game-screen { background: transparent; justify-content: flex-start; padding: 0; }
-
+#game-screen { background: #0a0e27; justify-content: flex-start; padding: 0; }
 .hud {
-  width: 100%; padding: 10px 16px;
+  width: 100%; padding: 8px 12px;
   display: flex; justify-content: space-between; align-items: center;
-  background: rgba(10,14,39,0.9); backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(0,255,136,0.15); z-index: 20;
+  background: rgba(10,14,39,0.95);
+  border-bottom: 1px solid rgba(0,255,136,0.15);
+  flex-shrink: 0;
 }
-.hud-section { display: flex; flex-direction: column; align-items: center; }
-.hud-label { font-size: 10px; color: #4a5580; text-transform: uppercase; letter-spacing: 1px; }
-.hud-value { font-size: 20px; font-weight: 800; color: #00ff88; }
-.hud-value.combo { color: #ff6b6b; }
-
-.hud-level {
+.hud-item { text-align: center; }
+.hud-label { font-size: 9px; color: #4a5580; text-transform: uppercase; letter-spacing: 1px; }
+.hud-val { font-size: 18px; font-weight: 800; color: #00ff88; }
+.hud-val.red { color: #ff6b6b; }
+.hud-lvl {
   background: linear-gradient(135deg, rgba(0,255,136,0.15), rgba(0,170,255,0.15));
-  padding: 4px 14px; border-radius: 20px;
+  padding: 3px 12px; border-radius: 16px;
   border: 1px solid rgba(0,255,136,0.3);
 }
-.hud-level .hud-value { font-size: 16px; }
-
-/* ── Progress Bar ────────────────────────────────────────────────────── */
-.progress-bar {
-  width: 100%; height: 4px; background: rgba(255,255,255,0.05);
-}
+.progress { width: 100%; height: 3px; background: rgba(255,255,255,0.05); flex-shrink: 0; }
 .progress-fill {
-  height: 100%; width: 0%;
+  height: 100%; width: 0%; transition: width 0.3s;
   background: linear-gradient(90deg, #00ff88, #00aaff);
-  transition: width 0.4s ease;
 }
 
-/* ── Game Board ──────────────────────────────────────────────────────── */
-.board-container {
+/* ── Board ───────────────────────────────────────────────────────────── */
+.board-wrap {
   flex: 1; display: flex; align-items: center; justify-content: center;
-  width: 100%; position: relative;
+  width: 100%; overflow: hidden;
+}
+.board {
+  display: grid;
+  background: rgba(15,21,56,0.8);
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0,255,136,0.08);
+  position: relative;
+}
+.cell {
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  border: 1px solid rgba(0,255,136,0.04);
+  transition: transform 0.12s ease;
+}
+.cell .emoji {
+  font-size: 28px;
+  line-height: 1;
+  transition: opacity 0.2s, transform 0.25s;
+  will-change: transform, opacity;
+}
+.cell.selected { background: rgba(0,255,136,0.12); box-shadow: inset 0 0 0 2px #00ff88; border-radius: 6px; }
+.cell.matched .emoji { opacity: 0; transform: scale(0.3); }
+.cell.falling .emoji {
+  animation: fallIn 0.35s ease-out forwards;
+}
+@keyframes fallIn {
+  from { transform: translateY(-100%); opacity: 0.5; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.cell.invalid { animation: shake 0.3s ease; }
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
 }
 
-canvas#gameCanvas {
-  border-radius: 12px;
-  box-shadow: 0 0 30px rgba(0,255,136,0.1);
-}
-
-/* ── Bonus Banner ────────────────────────────────────────────────────── */
-.bonus-banner {
-  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
+/* ── Banner ──────────────────────────────────────────────────────────── */
+.banner {
+  position: fixed; top: 45%; left: 50%; transform: translate(-50%, -50%) scale(0);
   background: linear-gradient(135deg, #00ff88, #00aaff);
-  color: #0a0e27; padding: 16px 32px; border-radius: 16px;
-  font-size: 22px; font-weight: 800; z-index: 100;
-  pointer-events: none; text-align: center;
-  box-shadow: 0 0 60px rgba(0,255,136,0.6);
+  color: #0a0e27; padding: 12px 28px; border-radius: 14px;
+  font-size: 20px; font-weight: 800; z-index: 100;
+  pointer-events: none; white-space: nowrap;
+  box-shadow: 0 0 40px rgba(0,255,136,0.5);
 }
-.bonus-banner.show {
-  animation: bonusPop 1.2s ease forwards;
-}
-@keyframes bonusPop {
-  0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
-  20% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
-  40% { transform: translate(-50%, -50%) scale(1); }
-  80% { opacity: 1; }
-  100% { transform: translate(-50%, -60%) scale(0.8); opacity: 0; }
+.banner.show { animation: pop 1s ease forwards; }
+@keyframes pop {
+  0% { transform: translate(-50%,-50%) scale(0); opacity: 0; }
+  15% { transform: translate(-50%,-50%) scale(1.15); opacity: 1; }
+  30% { transform: translate(-50%,-50%) scale(1); }
+  75% { opacity: 1; }
+  100% { transform: translate(-50%,-60%) scale(0.8); opacity: 0; }
 }
 
-/* ── Game Over Screen ────────────────────────────────────────────────── */
-#gameover-screen {
-  background: rgba(10,14,39,0.95); backdrop-filter: blur(20px);
+/* ── Cyber Tip ───────────────────────────────────────────────────────── */
+.tip {
+  position: fixed; bottom: 0; left: 0; width: 100%;
+  background: linear-gradient(180deg, transparent, rgba(10,14,39,0.95));
+  padding: 30px 16px 14px; text-align: center; z-index: 50;
+  font-size: 12px; color: #8b9dc3;
+  transform: translateY(100%); transition: transform 0.4s ease;
 }
-.gameover-title {
-  font-size: 32px; font-weight: 800; margin-bottom: 8px;
+.tip.show { transform: translateY(0); }
+
+/* ── Game Over ───────────────────────────────────────────────────────── */
+#gameover-screen { background: rgba(10,14,39,0.95); }
+.go-title {
+  font-size: 28px; font-weight: 800; margin-bottom: 6px;
   background: linear-gradient(135deg, #ff6b6b, #ff8e53);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-.gameover-subtitle {
-  font-size: 14px; color: #6b7db3; margin-bottom: 24px;
-}
-.score-display {
-  font-size: 48px; font-weight: 800; color: #00ff88;
-  margin-bottom: 4px;
-}
-.score-label { font-size: 12px; color: #4a5580; margin-bottom: 24px; }
-.stats-row {
-  display: flex; gap: 32px; margin-bottom: 32px;
-}
-.stat { text-align: center; }
-.stat-value { font-size: 24px; font-weight: 700; color: #00aaff; }
-.stat-label { font-size: 11px; color: #4a5580; }
-
-/* ── How To Play Screen ──────────────────────────────────────────────── */
-#howto-screen {
-  background: rgba(10,14,39,0.97); backdrop-filter: blur(20px);
-}
-.howto-title {
-  font-size: 24px; font-weight: 800; margin-bottom: 20px;
-  background: linear-gradient(135deg, #00ff88, #00aaff);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-.howto-steps {
-  max-width: 340px; width: 100%; text-align: left;
-}
-.howto-step {
-  display: flex; align-items: flex-start; gap: 14px;
-  margin-bottom: 18px;
-}
-.howto-icon {
-  font-size: 28px; min-width: 40px; text-align: center;
-  line-height: 1.2;
-}
-.howto-text {
-  font-size: 14px; color: #b0bce0; line-height: 1.5;
-}
-.howto-text strong {
-  color: #00ff88; font-weight: 700;
-}
-.howto-pieces {
-  display: flex; justify-content: center; gap: 8px;
-  margin: 16px 0 24px; font-size: 28px;
-}
-.howto-piece {
-  width: 44px; height: 44px; display: flex; align-items: center;
-  justify-content: center; border-radius: 10px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(0,255,136,0.15);
-}
-
-/* ── Cyber Tip Overlay ───────────────────────────────────────────────── */
-.cyber-tip {
-  position: fixed; bottom: 0; left: 0; width: 100%;
-  background: linear-gradient(180deg, transparent, rgba(10,14,39,0.95));
-  padding: 40px 20px 20px; text-align: center; z-index: 50;
-  display: none;
-}
-.cyber-tip.show { display: block; animation: fadeIn 0.5s ease; }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-.cyber-tip-text { font-size: 13px; color: #8b9dc3; margin-bottom: 6px; }
-/* ── Particles ───────────────────────────────────────────────────────── */
-.particle {
-  position: fixed; pointer-events: none; z-index: 200;
-  border-radius: 50%; animation: particleFly 0.8s ease-out forwards;
-}
-@keyframes particleFly {
-  to { transform: translateY(-80px) scale(0); opacity: 0; }
-}
+.go-sub { font-size: 13px; color: #6b7db3; margin-bottom: 20px; }
+.go-score { font-size: 44px; font-weight: 800; color: #00ff88; }
+.go-score-label { font-size: 11px; color: #4a5580; margin-bottom: 20px; }
+.go-stats { display: flex; gap: 28px; margin-bottom: 28px; }
+.go-stat { text-align: center; }
+.go-stat-val { font-size: 22px; font-weight: 700; color: #00aaff; }
+.go-stat-lbl { font-size: 10px; color: #4a5580; }
 </style>
 </head>
 <body>
 <div class="bg-grid"></div>
 
-<!-- ═══════════════ SPLASH SCREEN ═══════════════ -->
+<!-- SPLASH -->
 <div id="splash-screen" class="screen active">
   <div class="splash-logo">🛡️</div>
   <div class="splash-title">CYBERSHIELD</div>
-  <div class="splash-subtitle">D E F E N S E</div>
-  <button class="btn btn-primary" onclick="showScreen('howto-screen')">▶ PLAY</button>
-  <div class="splash-powered">
-    Match cybersecurity icons to neutralise threats!
-  </div>
+  <div class="splash-sub">D E F E N S E</div>
+  <button class="btn btn-play" id="btn-howto">▶ PLAY</button>
 </div>
 
-<!-- ═══════════════ HOW TO PLAY SCREEN ═══════════════ -->
+<!-- HOW TO PLAY -->
 <div id="howto-screen" class="screen">
   <div class="howto-title">HOW TO PLAY</div>
   <div class="howto-pieces">
@@ -259,656 +219,442 @@ canvas#gameCanvas {
     <div class="howto-piece">🔒</div>
     <div class="howto-piece">🔑</div>
     <div class="howto-piece">🔥</div>
-    <div class="howto-piece">🐛</div>
-    <div class="howto-piece">💀</div>
   </div>
-  <div class="howto-steps">
-    <div class="howto-step">
-      <div class="howto-icon">👆</div>
-      <div class="howto-text"><strong>Swipe</strong> icons in any direction to swap them with their neighbour</div>
-    </div>
-    <div class="howto-step">
-      <div class="howto-icon">3️⃣</div>
-      <div class="howto-text"><strong>Match 3+</strong> identical icons in a row or column to clear them and score points</div>
-    </div>
-    <div class="howto-step">
-      <div class="howto-icon">⚡</div>
-      <div class="howto-text"><strong>Chain combos!</strong> Cascading matches multiply your score — aim for big chains</div>
-    </div>
-    <div class="howto-step">
-      <div class="howto-icon">🚀</div>
-      <div class="howto-text"><strong>Level up</strong> by hitting the target score. Each level adds moves and unlocks new icons</div>
-    </div>
-    <div class="howto-step">
-      <div class="howto-icon">⏳</div>
-      <div class="howto-text"><strong>Moves are limited!</strong> Think carefully — when you run out, the game ends</div>
-    </div>
-  </div>
-  <button class="btn btn-primary" onclick="Game.start()" style="margin-top: 8px;">🛡️ START GAME</button>
+  <div class="howto-step"><div class="howto-icon">👆</div><div class="howto-text"><strong>Swipe</strong> an icon in any direction to swap it with its neighbour</div></div>
+  <div class="howto-step"><div class="howto-icon">3️⃣</div><div class="howto-text"><strong>Match 3+</strong> identical icons in a row or column to clear them</div></div>
+  <div class="howto-step"><div class="howto-icon">⚡</div><div class="howto-text"><strong>Chain combos!</strong> Cascading matches multiply your score</div></div>
+  <div class="howto-step"><div class="howto-icon">🚀</div><div class="howto-text"><strong>Level up</strong> by hitting the target score to earn bonus moves</div></div>
+  <div class="howto-step"><div class="howto-icon">⏳</div><div class="howto-text"><strong>Moves are limited</strong> — think carefully before each swipe!</div></div>
+  <button class="btn btn-play" id="btn-start" style="margin-top:12px">🛡️ START GAME</button>
 </div>
 
-<!-- ═══════════════ GAME SCREEN ═══════════════ -->
+<!-- GAME -->
 <div id="game-screen" class="screen">
   <div class="hud">
-    <div class="hud-section">
-      <span class="hud-label">Score</span>
-      <span class="hud-value" id="hud-score">0</span>
-    </div>
-    <div class="hud-section hud-level">
-      <span class="hud-label">Level</span>
-      <span class="hud-value" id="hud-level">1</span>
-    </div>
-    <div class="hud-section">
-      <span class="hud-label">Moves</span>
-      <span class="hud-value" id="hud-moves">30</span>
-    </div>
-    <div class="hud-section">
-      <span class="hud-label">Combo</span>
-      <span class="hud-value combo" id="hud-combo">x1</span>
-    </div>
+    <div class="hud-item"><div class="hud-label">Score</div><div class="hud-val" id="h-score">0</div></div>
+    <div class="hud-item hud-lvl"><div class="hud-label">Level</div><div class="hud-val" id="h-level">1</div></div>
+    <div class="hud-item"><div class="hud-label">Moves</div><div class="hud-val" id="h-moves">30</div></div>
+    <div class="hud-item"><div class="hud-label">Combo</div><div class="hud-val red" id="h-combo">x1</div></div>
   </div>
-  <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
-  <div class="board-container">
-    <canvas id="gameCanvas"></canvas>
-  </div>
-  <div class="cyber-tip" id="cyber-tip">
-    <div class="cyber-tip-text" id="cyber-tip-text"></div>
-  </div>
+  <div class="progress"><div class="progress-fill" id="prog"></div></div>
+  <div class="board-wrap"><div class="board" id="board"></div></div>
+  <div class="tip" id="tip"></div>
 </div>
 
-<!-- ═══════════════ GAME OVER SCREEN ═══════════════ -->
+<!-- GAME OVER -->
 <div id="gameover-screen" class="screen">
-  <div class="gameover-title">THREAT DETECTED</div>
-  <div class="gameover-subtitle">Your shields are depleted!</div>
-  <div class="score-display" id="final-score">0</div>
-  <div class="score-label">THREAT SCORE NEUTRALISED</div>
-  <div class="stats-row">
-    <div class="stat">
-      <div class="stat-value" id="final-level">1</div>
-      <div class="stat-label">Level</div>
-    </div>
-    <div class="stat">
-      <div class="stat-value" id="final-combo">1</div>
-      <div class="stat-label">Best Combo</div>
-    </div>
-    <div class="stat">
-      <div class="stat-value" id="final-matches">0</div>
-      <div class="stat-label">Matches</div>
-    </div>
+  <div class="go-title">THREAT DETECTED</div>
+  <div class="go-sub">Your shields are depleted!</div>
+  <div class="go-score" id="go-score">0</div>
+  <div class="go-score-label">THREATS NEUTRALISED</div>
+  <div class="go-stats">
+    <div class="go-stat"><div class="go-stat-val" id="go-level">1</div><div class="go-stat-lbl">Level</div></div>
+    <div class="go-stat"><div class="go-stat-val" id="go-combo">1</div><div class="go-stat-lbl">Best Combo</div></div>
+    <div class="go-stat"><div class="go-stat-val" id="go-matches">0</div><div class="go-stat-lbl">Matches</div></div>
   </div>
-  <button class="btn btn-primary" onclick="Game.start()">🔄 PLAY AGAIN</button>
+  <button class="btn btn-play" id="btn-retry">🔄 PLAY AGAIN</button>
 </div>
 
-<!-- ═══════════════ BONUS BANNER ═══════════════ -->
-<div class="bonus-banner" id="bonus-banner"></div>
+<div class="banner" id="banner"></div>
 
 <script>
-// ═══════════════════════════════════════════════════════════════════════════
-// CyberShield Defense — Match-3 Puzzle Engine
-// ═══════════════════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════════
+// CyberShield Defense v2 — DOM-based Match-3
+// ═════════════════════════════════════════════════════════════════════
+(() => {
+const COLS = 7, ROWS = 8;
+const ICONS = ['🛡️','🔒','🔑','🔥'];
+const ICONS_EXTRA = ['🐛','💀'];
+const TIPS = [
+  "🛡️ Use a unique password for every account",
+  "🔒 Enable two-factor authentication everywhere",
+  "🔑 Use a password manager for better security",
+  "🔥 Don't click suspicious links in emails",
+  "🛡️ Keep your software and OS updated",
+  "🔒 Use a VPN on public Wi-Fi networks",
+  "🔑 Back up your data regularly",
+  "🔥 Review app permissions on your phone",
+];
 
-const Game = (() => {
-  // ── Constants ──────────────────────────────────────────────────────────
-  const COLS = 7;
-  const ROWS = 8;
-  const PIECE_TYPES = [
-    { emoji: '🛡️', name: 'Shield',   color: '#00ff88' },
-    { emoji: '🔒', name: 'Lock',     color: '#00aaff' },
-    { emoji: '🔑', name: 'Key',      color: '#ffcc00' },
-    { emoji: '🔥', name: 'Firewall', color: '#ff6b6b' },
-    { emoji: '🐛', name: 'Bug',      color: '#ff8e53' },
-    { emoji: '💀', name: 'Threat',   color: '#cc44ff' },
-  ];
+let grid, score, level, moves, combo, maxCombo, totalMatches;
+let targetScore, animating, selectedCell, tipTimer;
+let touchStartX, touchStartY, touchStartCell;
+let cellSize;
 
-  const CYBER_TIPS = [
-    "Use a unique password for every account",
-    "Enable two-factor authentication everywhere",
-    "Keep your software and OS updated",
-    "Don't click suspicious links in emails",
-    "Use a VPN on public Wi-Fi networks",
-    "Back up your data regularly",
-    "Review app permissions on your phone",
-    "Use a password manager for security",
-    "Be cautious of phishing attempts",
-    "Encrypt sensitive files before sharing",
-    "Monitor your accounts for unusual activity",
-    "Secure your home router with a strong password",
-  ];
+const $ = id => document.getElementById(id);
+const board = $('board');
 
-  // ── State ──────────────────────────────────────────────────────────────
-  let canvas, ctx;
-  let cellSize, boardX, boardY;
-  let grid = [];
-  let score = 0, level = 1, moves = 30, combo = 0, maxCombo = 0, totalMatches = 0;
-  let targetScore = 500;
-  let selected = null;
-  let animating = false;
-  let swapping = false;
-  let fallingPieces = [];
-  let matchedCells = [];
-  let tipTimer = null;
+// ── Screens ──
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+}
+$('btn-howto').onclick = () => showScreen('howto-screen');
+$('btn-start').onclick = startGame;
+$('btn-retry').onclick = startGame;
 
-  // Touch/Mouse state
-  let touchStartX = 0, touchStartY = 0;
-  let touchCell = null;
+// ── Init ──
+function startGame() {
+  score = 0; level = 1; moves = 30; combo = 0; maxCombo = 0;
+  totalMatches = 0; targetScore = 500; animating = false; selectedCell = null;
+  showScreen('game-screen');
+  sizeBoardAndBuild();
+  window.onresize = sizeBoardAndBuild;
+  clearInterval(tipTimer);
+  tipTimer = setInterval(showTip, 18000);
+  setTimeout(showTip, 4000);
+}
 
-  // ── Initialization ─────────────────────────────────────────────────────
-  function start() {
-    showScreen('game-screen');
-    canvas = document.getElementById('gameCanvas');
-    ctx = canvas.getContext('2d');
+function sizeBoardAndBuild() {
+  const maxW = Math.min(window.innerWidth - 8, 420);
+  const maxH = window.innerHeight - 90;
+  cellSize = Math.floor(Math.min(maxW / COLS, maxH / ROWS));
+  board.style.gridTemplateColumns = `repeat(${COLS}, ${cellSize}px)`;
+  board.style.gridTemplateRows = `repeat(${ROWS}, ${cellSize}px)`;
+  board.style.width = cellSize * COLS + 'px';
+  initGrid();
+  renderBoard();
+  updateHUD();
+}
 
-    score = 0; level = 1; moves = 30; combo = 0; maxCombo = 0; totalMatches = 0;
-    targetScore = 500;
-    selected = null; animating = false;
+function getIcons() {
+  const base = ICONS.slice();
+  if (level >= 4) base.push(ICONS_EXTRA[0]);
+  if (level >= 7) base.push(ICONS_EXTRA[1]);
+  return base;
+}
 
-    resizeCanvas();
-    initGrid();
-    removeInitialMatches();
-    updateHUD();
-    render();
+function randIcon() {
+  const icons = getIcons();
+  return icons[Math.floor(Math.random() * icons.length)];
+}
 
-    // Show a cyber tip every 20 seconds
-    clearInterval(tipTimer);
-    tipTimer = setInterval(showCyberTip, 20000);
-    setTimeout(showCyberTip, 5000);
-
-    // Events
-    canvas.onmousedown = onPointerDown;
-    canvas.onmouseup = onPointerUp;
-    canvas.ontouchstart = onTouchStart;
-    canvas.ontouchend = onTouchEnd;
-    window.onresize = () => { resizeCanvas(); render(); };
-  }
-
-  function resizeCanvas() {
-    const maxW = Math.min(window.innerWidth - 16, 420);
-    const maxH = window.innerHeight - 120;
-    cellSize = Math.floor(Math.min(maxW / COLS, maxH / ROWS));
-    canvas.width = cellSize * COLS;
-    canvas.height = cellSize * ROWS;
-  }
-
-  function initGrid() {
-    grid = [];
-    for (let r = 0; r < ROWS; r++) {
-      grid[r] = [];
-      for (let c = 0; c < COLS; c++) {
-        grid[r][c] = {
-          type: randType(),
-          x: c * cellSize,
-          y: r * cellSize,
-          targetY: r * cellSize,
-          alpha: 1,
-          scale: 1,
-        };
-      }
-    }
-  }
-
-  function randType() {
-    // More piece types unlock at higher levels
-    const available = Math.min(PIECE_TYPES.length, 4 + Math.floor(level / 3));
-    return Math.floor(Math.random() * available);
-  }
-
-  function removeInitialMatches() {
-    let hasMatches = true;
-    while (hasMatches) {
-      hasMatches = false;
-      for (let r = 0; r < ROWS; r++) {
-        for (let c = 0; c < COLS; c++) {
-          // Check horizontal
-          if (c >= 2 &&
-              grid[r][c].type === grid[r][c-1].type &&
-              grid[r][c].type === grid[r][c-2].type) {
-            grid[r][c].type = randType();
-            hasMatches = true;
-          }
-          // Check vertical
-          if (r >= 2 &&
-              grid[r][c].type === grid[r-1][c].type &&
-              grid[r][c].type === grid[r-2][c].type) {
-            grid[r][c].type = randType();
-            hasMatches = true;
-          }
-        }
-      }
-    }
-  }
-
-  // ── Input Handling ─────────────────────────────────────────────────────
-  function getCellFromPos(px, py) {
-    const rect = canvas.getBoundingClientRect();
-    const x = px - rect.left;
-    const y = py - rect.top;
-    const c = Math.floor(x / cellSize);
-    const r = Math.floor(y / cellSize);
-    if (r >= 0 && r < ROWS && c >= 0 && c < COLS) return { r, c };
-    return null;
-  }
-
-  function onPointerDown(e) {
-    if (animating) return;
-    const cell = getCellFromPos(e.clientX, e.clientY);
-    if (!cell) return;
-    touchStartX = e.clientX;
-    touchStartY = e.clientY;
-    touchCell = cell;
-    selected = cell;
-    render();
-  }
-
-  function onPointerUp(e) {
-    if (animating || !touchCell) return;
-    const dx = e.clientX - touchStartX;
-    const dy = e.clientY - touchStartY;
-    handleSwipe(dx, dy);
-  }
-
-  function onTouchStart(e) {
-    if (animating) return;
-    e.preventDefault();
-    const t = e.touches[0];
-    const cell = getCellFromPos(t.clientX, t.clientY);
-    if (!cell) return;
-    touchStartX = t.clientX;
-    touchStartY = t.clientY;
-    touchCell = cell;
-    selected = cell;
-    render();
-  }
-
-  function onTouchEnd(e) {
-    if (animating || !touchCell) return;
-    e.preventDefault();
-    const t = e.changedTouches[0];
-    const dx = t.clientX - touchStartX;
-    const dy = t.clientY - touchStartY;
-    handleSwipe(dx, dy);
-  }
-
-  function handleSwipe(dx, dy) {
-    const threshold = cellSize * 0.25;
-    let dr = 0, dc = 0;
-    if (Math.abs(dx) > Math.abs(dy)) {
-      if (Math.abs(dx) > threshold) dc = dx > 0 ? 1 : -1;
-    } else {
-      if (Math.abs(dy) > threshold) dr = dy > 0 ? 1 : -1;
-    }
-
-    if (dr === 0 && dc === 0) { touchCell = null; return; }
-
-    const tr = touchCell.r + dr;
-    const tc = touchCell.c + dc;
-    if (tr < 0 || tr >= ROWS || tc < 0 || tc >= COLS) { touchCell = null; return; }
-
-    trySwap(touchCell.r, touchCell.c, tr, tc);
-    touchCell = null;
-  }
-
-  // ── Swap & Match Logic ─────────────────────────────────────────────────
-  function trySwap(r1, c1, r2, c2) {
-    animating = true;
-    combo = 0;
-
-    // Swap
-    const tmp = grid[r1][c1].type;
-    grid[r1][c1].type = grid[r2][c2].type;
-    grid[r2][c2].type = tmp;
-
-    // Check if this creates a match
-    const matches = findMatches();
-    if (matches.length === 0) {
-      // Swap back
-      grid[r2][c2].type = grid[r1][c1].type;
-      grid[r1][c1].type = tmp;
-      animating = false;
-      shakeAnimation(r1, c1, r2, c2);
-      return;
-    }
-
-    moves--;
-    updateHUD();
-
-    // Process cascading matches
-    processMatches(matches);
-  }
-
-  function findMatches() {
-    const matched = new Set();
-
-    // Horizontal
-    for (let r = 0; r < ROWS; r++) {
-      for (let c = 0; c < COLS - 2; c++) {
-        const t = grid[r][c].type;
-        if (t === grid[r][c+1].type && t === grid[r][c+2].type) {
-          matched.add(`${r},${c}`);
-          matched.add(`${r},${c+1}`);
-          matched.add(`${r},${c+2}`);
-          // Check for 4+ in a row
-          let ext = c + 3;
-          while (ext < COLS && grid[r][ext].type === t) {
-            matched.add(`${r},${ext}`);
-            ext++;
-          }
-        }
-      }
-    }
-
-    // Vertical
+function initGrid() {
+  grid = [];
+  for (let r = 0; r < ROWS; r++) {
+    grid[r] = [];
     for (let c = 0; c < COLS; c++) {
-      for (let r = 0; r < ROWS - 2; r++) {
-        const t = grid[r][c].type;
-        if (t === grid[r+1][c].type && t === grid[r+2][c].type) {
-          matched.add(`${r},${c}`);
-          matched.add(`${r+1},${c}`);
-          matched.add(`${r+2},${c}`);
-          let ext = r + 3;
-          while (ext < ROWS && grid[ext][c].type === t) {
-            matched.add(`${ext},${c}`);
-            ext++;
-          }
+      grid[r][c] = randIcon();
+    }
+  }
+  // Remove pre-existing matches
+  let clean = false;
+  while (!clean) {
+    clean = true;
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        if (c >= 2 && grid[r][c] === grid[r][c-1] && grid[r][c] === grid[r][c-2]) {
+          grid[r][c] = randIcon(); clean = false;
+        }
+        if (r >= 2 && grid[r][c] === grid[r-1][c] && grid[r][c] === grid[r-2][c]) {
+          grid[r][c] = randIcon(); clean = false;
         }
       }
     }
+  }
+}
 
-    return [...matched].map(s => {
-      const [r, c] = s.split(',').map(Number);
-      return { r, c };
-    });
+// ── Render ──
+function renderBoard() {
+  board.innerHTML = '';
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.r = r;
+      cell.dataset.c = c;
+      cell.style.width = cellSize + 'px';
+      cell.style.height = cellSize + 'px';
+      const emoji = document.createElement('span');
+      emoji.className = 'emoji';
+      emoji.textContent = grid[r][c];
+      emoji.style.fontSize = Math.floor(cellSize * 0.55) + 'px';
+      cell.appendChild(emoji);
+      board.appendChild(cell);
+    }
+  }
+  attachTouchHandlers();
+}
+
+function updateCell(r, c) {
+  const idx = r * COLS + c;
+  const cell = board.children[idx];
+  if (!cell) return;
+  const emoji = cell.querySelector('.emoji');
+  emoji.textContent = grid[r][c];
+}
+
+function getCell(r, c) {
+  return board.children[r * COLS + c];
+}
+
+// ── Touch / Swipe ──
+function attachTouchHandlers() {
+  board.addEventListener('touchstart', onTouchStart, { passive: false });
+  board.addEventListener('touchend', onTouchEnd, { passive: false });
+  board.addEventListener('mousedown', onMouseDown);
+  board.addEventListener('mouseup', onMouseUp);
+}
+
+function cellFromEvent(e) {
+  const touch = e.touches ? e.touches[0] || e.changedTouches[0] : e;
+  const rect = board.getBoundingClientRect();
+  const x = touch.clientX - rect.left;
+  const y = touch.clientY - rect.top;
+  const c = Math.floor(x / cellSize);
+  const r = Math.floor(y / cellSize);
+  if (r >= 0 && r < ROWS && c >= 0 && c < COLS) return { r, c };
+  return null;
+}
+
+function onTouchStart(e) {
+  e.preventDefault();
+  if (animating) return;
+  const cell = cellFromEvent(e);
+  if (!cell) return;
+  const t = e.touches[0];
+  touchStartX = t.clientX; touchStartY = t.clientY;
+  touchStartCell = cell;
+  selectCell(cell.r, cell.c);
+}
+function onTouchEnd(e) {
+  e.preventDefault();
+  if (animating || !touchStartCell) return;
+  const t = e.changedTouches[0];
+  handleSwipe(t.clientX - touchStartX, t.clientY - touchStartY);
+}
+function onMouseDown(e) {
+  if (animating) return;
+  const cell = cellFromEvent(e);
+  if (!cell) return;
+  touchStartX = e.clientX; touchStartY = e.clientY;
+  touchStartCell = cell;
+  selectCell(cell.r, cell.c);
+}
+function onMouseUp(e) {
+  if (animating || !touchStartCell) return;
+  handleSwipe(e.clientX - touchStartX, e.clientY - touchStartY);
+}
+
+function selectCell(r, c) {
+  board.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+  getCell(r, c)?.classList.add('selected');
+  selectedCell = { r, c };
+}
+
+function handleSwipe(dx, dy) {
+  const threshold = cellSize * 0.2;
+  let dr = 0, dc = 0;
+  if (Math.abs(dx) > Math.abs(dy)) {
+    if (Math.abs(dx) > threshold) dc = dx > 0 ? 1 : -1;
+  } else {
+    if (Math.abs(dy) > threshold) dr = dy > 0 ? 1 : -1;
+  }
+  if (dr === 0 && dc === 0) { touchStartCell = null; return; }
+
+  const sr = touchStartCell.r, sc = touchStartCell.c;
+  const tr = sr + dr, tc = sc + dc;
+  touchStartCell = null;
+
+  if (tr < 0 || tr >= ROWS || tc < 0 || tc >= COLS) return;
+  trySwap(sr, sc, tr, tc);
+}
+
+// ── Swap & Match ──
+function trySwap(r1, c1, r2, c2) {
+  animating = true;
+  combo = 0;
+
+  // Swap in grid
+  const tmp = grid[r1][c1];
+  grid[r1][c1] = grid[r2][c2];
+  grid[r2][c2] = tmp;
+
+  // Swap visually
+  updateCell(r1, c1);
+  updateCell(r2, c2);
+
+  const matches = findAllMatches();
+  if (matches.length === 0) {
+    // Swap back
+    grid[r2][c2] = grid[r1][c1];
+    grid[r1][c1] = tmp;
+    updateCell(r1, c1);
+    updateCell(r2, c2);
+    // Shake
+    getCell(r1, c1)?.classList.add('invalid');
+    getCell(r2, c2)?.classList.add('invalid');
+    setTimeout(() => {
+      getCell(r1, c1)?.classList.remove('invalid');
+      getCell(r2, c2)?.classList.remove('invalid');
+      animating = false;
+    }, 300);
+    return;
   }
 
-  function processMatches(matches) {
-    combo++;
-    if (combo > maxCombo) maxCombo = combo;
-    totalMatches += matches.length;
+  moves--;
+  updateHUD();
+  processMatches(matches);
+}
 
-    // Score: base 10 per piece × combo multiplier × (bonus for 4+)
-    const matchBonus = matches.length > 3 ? matches.length * 5 : 0;
-    const points = (matches.length * 10 + matchBonus) * combo;
-    score += points;
-
-    // Show combo banner
-    if (combo >= 2) {
-      showBanner(`⚡ ${combo}x COMBO! +${points}`);
-    }
-    if (matches.length >= 5) {
-      showBanner('🛡️ CYBER SHIELD ACTIVATED!');
-    }
-
-    updateHUD();
-
-    // Animate matched cells disappearing
-    matchedCells = matches.map(m => ({...m, alpha: 1}));
-    animateRemoval(() => {
-      // Remove matched pieces
-      for (const m of matches) {
-        grid[m.r][m.c].type = -1;
+function findAllMatches() {
+  const matched = new Set();
+  // Horizontal
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS - 2; c++) {
+      const t = grid[r][c];
+      if (t && t === grid[r][c+1] && t === grid[r][c+2]) {
+        let end = c + 2;
+        while (end + 1 < COLS && grid[r][end+1] === t) end++;
+        for (let i = c; i <= end; i++) matched.add(r * COLS + i);
       }
-      // Gravity
-      applyGravity();
-      // Fill empty spaces
-      fillEmpty();
-      // Animate falling
-      animateFall(() => {
-        // Check for cascading matches
-        const newMatches = findMatches();
-        if (newMatches.length > 0) {
-          processMatches(newMatches);
-        } else {
-          // Cascade done
-          checkLevelUp();
-          selected = null;
-          animating = false;
-
-          if (moves <= 0) {
-            endGame();
-          }
-        }
-      });
-    });
+    }
   }
+  // Vertical
+  for (let c = 0; c < COLS; c++) {
+    for (let r = 0; r < ROWS - 2; r++) {
+      const t = grid[r][c];
+      if (t && t === grid[r+1][c] && t === grid[r+2][c]) {
+        let end = r + 2;
+        while (end + 1 < ROWS && grid[end+1][c] === t) end++;
+        for (let i = r; i <= end; i++) matched.add(i * COLS + c);
+      }
+    }
+  }
+  return [...matched];
+}
 
-  function applyGravity() {
+function processMatches(matches) {
+  combo++;
+  if (combo > maxCombo) maxCombo = combo;
+  totalMatches += matches.length;
+
+  const bonus = matches.length > 3 ? matches.length * 5 : 0;
+  const pts = (matches.length * 10 + bonus) * combo;
+  score += pts;
+
+  if (combo >= 2) showBanner(`⚡ ${combo}x COMBO! +${pts}`);
+  if (matches.length >= 5) showBanner('🛡️ SHIELD ACTIVATED!');
+  updateHUD();
+
+  // Animate matched cells disappearing
+  matches.forEach(idx => {
+    const cell = board.children[idx];
+    if (cell) cell.classList.add('matched');
+  });
+
+  setTimeout(() => {
+    // Clear matched
+    matches.forEach(idx => {
+      const r = Math.floor(idx / COLS), c = idx % COLS;
+      grid[r][c] = null;
+    });
+
+    // Gravity: drop pieces down
     for (let c = 0; c < COLS; c++) {
       let writeRow = ROWS - 1;
       for (let r = ROWS - 1; r >= 0; r--) {
-        if (grid[r][c].type !== -1) {
-          if (writeRow !== r) {
-            grid[writeRow][c].type = grid[r][c].type;
-            grid[r][c].type = -1;
-          }
+        if (grid[r][c] !== null) {
+          grid[writeRow][c] = grid[r][c];
+          if (writeRow !== r) grid[r][c] = null;
           writeRow--;
         }
       }
-    }
-  }
-
-  function fillEmpty() {
-    for (let c = 0; c < COLS; c++) {
-      for (let r = 0; r < ROWS; r++) {
-        if (grid[r][c].type === -1) {
-          grid[r][c].type = randType();
-          grid[r][c].y = -cellSize * (ROWS - r); // Start above the board
-          grid[r][c].targetY = r * cellSize;
-        }
+      // Fill empty cells at top
+      for (let r = writeRow; r >= 0; r--) {
+        grid[r][c] = randIcon();
       }
     }
-  }
 
-  // ── Animations ─────────────────────────────────────────────────────────
-  function animateRemoval(callback) {
-    let frame = 0;
-    const totalFrames = 12;
-    function step() {
-      frame++;
-      for (const m of matchedCells) {
-        m.alpha = 1 - (frame / totalFrames);
-      }
-      render();
-      if (frame < totalFrames) {
-        requestAnimationFrame(step);
-      } else {
-        matchedCells = [];
-        callback();
-      }
-    }
-    requestAnimationFrame(step);
-  }
-
-  function animateFall(callback) {
-    let done = false;
-    function step() {
-      done = true;
-      for (let r = 0; r < ROWS; r++) {
-        for (let c = 0; c < COLS; c++) {
-          const cell = grid[r][c];
-          const target = r * cellSize;
-          if (cell.y < target) {
-            cell.y = Math.min(cell.y + cellSize * 0.3, target);
-            if (cell.y < target) done = false;
-          }
-          cell.targetY = target;
-        }
-      }
-      render();
-      if (!done) {
-        requestAnimationFrame(step);
-      } else {
-        callback();
-      }
-    }
-    requestAnimationFrame(step);
-  }
-
-  function shakeAnimation(r1, c1, r2, c2) {
-    let frame = 0;
-    const orig1x = c1 * cellSize;
-    const orig1y = r1 * cellSize;
-    const orig2x = c2 * cellSize;
-    const orig2y = r2 * cellSize;
-    function step() {
-      frame++;
-      const offset = Math.sin(frame * 0.8) * (6 - frame * 0.5);
-      grid[r1][c1].x = orig1x + offset;
-      grid[r2][c2].x = orig2x - offset;
-      render();
-      if (frame < 10) {
-        requestAnimationFrame(step);
-      } else {
-        grid[r1][c1].x = orig1x;
-        grid[r2][c2].x = orig2x;
-        render();
-      }
-    }
-    requestAnimationFrame(step);
-  }
-
-  // ── Rendering ──────────────────────────────────────────────────────────
-  function render() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Board background
-    ctx.fillStyle = 'rgba(15, 21, 56, 0.8)';
-    ctx.beginPath();
-    ctx.roundRect(0, 0, canvas.width, canvas.height, 12);
-    ctx.fill();
-
-    // Grid lines
-    ctx.strokeStyle = 'rgba(0, 255, 136, 0.05)';
-    ctx.lineWidth = 1;
-    for (let r = 1; r < ROWS; r++) {
-      ctx.beginPath();
-      ctx.moveTo(0, r * cellSize);
-      ctx.lineTo(canvas.width, r * cellSize);
-      ctx.stroke();
-    }
-    for (let c = 1; c < COLS; c++) {
-      ctx.beginPath();
-      ctx.moveTo(c * cellSize, 0);
-      ctx.lineTo(c * cellSize, canvas.height);
-      ctx.stroke();
-    }
-
-    // Draw pieces
+    // Re-render all cells and animate new ones
+    const fallingCells = [];
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
-        const cell = grid[r][c];
-        if (cell.type < 0) continue;
-
-        const piece = PIECE_TYPES[cell.type];
-        const x = c * cellSize;
-        const y = cell.y !== undefined ? cell.y : r * cellSize;
-        const centerX = x + cellSize / 2;
-        const centerY = y + cellSize / 2;
-
-        // Selection highlight
-        if (selected && selected.r === r && selected.c === c) {
-          ctx.strokeStyle = '#00ff88';
-          ctx.lineWidth = 3;
-          ctx.beginPath();
-          ctx.roundRect(x + 3, y + 3, cellSize - 6, cellSize - 6, 8);
-          ctx.stroke();
-
-          ctx.fillStyle = 'rgba(0, 255, 136, 0.1)';
-          ctx.beginPath();
-          ctx.roundRect(x + 3, y + 3, cellSize - 6, cellSize - 6, 8);
-          ctx.fill();
+        const idx = r * COLS + c;
+        const cell = board.children[idx];
+        const emoji = cell.querySelector('.emoji');
+        cell.className = 'cell';
+        emoji.textContent = grid[r][c];
+        // Mark cells that changed as falling
+        if (matches.includes(idx) || grid[r][c] !== emoji.textContent) {
+          fallingCells.push(idx);
         }
-
-        // Check if this cell is being removed
-        const matchedCell = matchedCells.find(m => m.r === r && m.c === c);
-        if (matchedCell) {
-          ctx.globalAlpha = matchedCell.alpha;
-          // Glow effect on removal
-          ctx.fillStyle = piece.color + '40';
-          ctx.beginPath();
-          ctx.arc(centerX, centerY, cellSize * 0.4, 0, Math.PI * 2);
-          ctx.fill();
-        }
-
-        // Draw emoji
-        const fontSize = Math.floor(cellSize * 0.55);
-        ctx.font = `${fontSize}px "Segoe UI Emoji", "Apple Color Emoji", sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(piece.emoji, centerX, centerY + 2);
-
-        ctx.globalAlpha = 1;
       }
     }
-  }
 
-  // ── Game Logic ─────────────────────────────────────────────────────────
-  function checkLevelUp() {
-    if (score >= targetScore) {
-      level++;
-      moves += 10 + Math.floor(level * 1.5);
-      targetScore = Math.floor(targetScore * 1.8);
-      showBanner(`🚀 LEVEL ${level}!`);
-
-      updateHUD();
-    }
-  }
-
-  function endGame() {
-    clearInterval(tipTimer);
-    document.getElementById('cyber-tip').classList.remove('show');
-
-    document.getElementById('final-score').textContent = score.toLocaleString();
-    document.getElementById('final-level').textContent = level;
-    document.getElementById('final-combo').textContent = maxCombo + 'x';
-    document.getElementById('final-matches').textContent = totalMatches;
-
-    // Try submitting score to Telegram
-    try {
-      if (window.TelegramGameProxy) {
-        window.TelegramGameProxy.shareScore();
+    // Add falling animation to affected columns
+    matches.forEach(idx => {
+      const c = idx % COLS;
+      for (let r = 0; r < ROWS; r++) {
+        const cellIdx = r * COLS + c;
+        const cell = board.children[cellIdx];
+        cell.classList.add('falling');
       }
-    } catch (e) {}
+    });
 
-    setTimeout(() => showScreen('gameover-screen'), 600);
+    setTimeout(() => {
+      // Remove falling class
+      board.querySelectorAll('.falling').forEach(el => el.classList.remove('falling'));
+
+      // Check for cascading matches
+      const newMatches = findAllMatches();
+      if (newMatches.length > 0) {
+        processMatches(newMatches);
+      } else {
+        checkLevelUp();
+        board.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+        animating = false;
+        if (moves <= 0) endGame();
+      }
+    }, 350);
+  }, 250);
+}
+
+// ── Game Logic ──
+function checkLevelUp() {
+  if (score >= targetScore) {
+    level++;
+    moves += 10 + Math.floor(level * 1.5);
+    targetScore = Math.floor(targetScore * 1.8);
+    showBanner(`🚀 LEVEL ${level}!`);
+    updateHUD();
   }
+}
 
-  // ── UI Helpers ─────────────────────────────────────────────────────────
-  function showScreen(id) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-  }
+function endGame() {
+  clearInterval(tipTimer);
+  $('go-score').textContent = score.toLocaleString();
+  $('go-level').textContent = level;
+  $('go-combo').textContent = maxCombo + 'x';
+  $('go-matches').textContent = totalMatches;
+  try { if (window.TelegramGameProxy) window.TelegramGameProxy.shareScore(); } catch(e) {}
+  setTimeout(() => showScreen('gameover-screen'), 500);
+}
 
-  function updateHUD() {
-    document.getElementById('hud-score').textContent = score.toLocaleString();
-    document.getElementById('hud-level').textContent = level;
-    document.getElementById('hud-moves').textContent = moves;
-    document.getElementById('hud-combo').textContent = 'x' + Math.max(combo, 1);
+// ── HUD ──
+function updateHUD() {
+  $('h-score').textContent = score.toLocaleString();
+  $('h-level').textContent = level;
+  $('h-moves').textContent = moves;
+  $('h-combo').textContent = 'x' + Math.max(combo, 1);
+  $('prog').style.width = Math.min(100, (score / targetScore) * 100) + '%';
+}
 
-    const pct = Math.min(100, (score / targetScore) * 100);
-    document.getElementById('progress-fill').style.width = pct + '%';
-  }
+function showBanner(text) {
+  const el = $('banner');
+  el.textContent = text;
+  el.classList.remove('show');
+  void el.offsetWidth;
+  el.classList.add('show');
+}
 
-  function showBanner(text) {
-    const el = document.getElementById('bonus-banner');
-    el.textContent = text;
-    el.classList.remove('show');
-    void el.offsetWidth; // reflow
-    el.classList.add('show');
-  }
-
-  function showCyberTip() {
-    const tip = CYBER_TIPS[Math.floor(Math.random() * CYBER_TIPS.length)];
-    const el = document.getElementById('cyber-tip');
-    document.getElementById('cyber-tip-text').textContent = '🛡️ ' + tip;
-    el.classList.add('show');
-    setTimeout(() => el.classList.remove('show'), 6000);
-  }
-
-  // ── Public API ─────────────────────────────────────────────────────────
-  return { start, showScreen };
+function showTip() {
+  const el = $('tip');
+  el.textContent = TIPS[Math.floor(Math.random() * TIPS.length)];
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 5000);
+}
 })();
-
-// Global helper so HTML onclick can reach it
-function showScreen(id) { Game.showScreen(id); }
 </script>
 </body>
 </html>
