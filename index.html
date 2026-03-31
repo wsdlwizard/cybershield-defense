@@ -57,6 +57,25 @@ html, body {
 }
 .splash-sub { font-size: 13px; color: #6b7db3; margin-bottom: 28px; }
 
+/* ── Username Screen ─────────────────────────────────────────────────── */
+#name-screen { background: rgba(10,14,39,0.97); }
+.name-title {
+  font-size: 22px; font-weight: 800; margin-bottom: 8px;
+  color: #00ff88;
+}
+.name-sub { font-size: 13px; color: #6b7db3; margin-bottom: 20px; }
+.name-input {
+  width: 260px; padding: 14px 18px; border-radius: 12px;
+  border: 2px solid rgba(0,255,136,0.3);
+  background: rgba(15,21,56,0.8); color: #e0e6ff;
+  font-size: 18px; font-weight: 700; text-align: center;
+  outline: none; letter-spacing: 1px;
+  transition: border-color 0.2s;
+}
+.name-input:focus { border-color: #00ff88; box-shadow: 0 0 20px rgba(0,255,136,0.15); }
+.name-input::placeholder { color: #4a5580; font-weight: 400; }
+.name-error { font-size: 12px; color: #ff6b6b; margin-top: 8px; min-height: 18px; }
+
 /* ── How To Play ─────────────────────────────────────────────────────── */
 #howto-screen { background: rgba(10,14,39,0.97); }
 .howto-title {
@@ -109,6 +128,11 @@ html, body {
   background: linear-gradient(135deg, rgba(0,255,136,0.15), rgba(0,170,255,0.15));
   padding: 3px 12px; border-radius: 16px;
   border: 1px solid rgba(0,255,136,0.3);
+}
+.hud-name {
+  font-size: 9px; color: #00aaff; text-align: center;
+  padding: 2px 12px 0; background: rgba(10,14,39,0.95);
+  flex-shrink: 0;
 }
 .progress { width: 100%; height: 3px; background: rgba(255,255,255,0.05); flex-shrink: 0; }
 .progress-fill {
@@ -240,20 +264,62 @@ html, body {
 .tip.show { transform: translateY(0); }
 
 /* ── Game Over ───────────────────────────────────────────────────────── */
-#gameover-screen { background: rgba(10,14,39,0.95); }
+#gameover-screen { background: rgba(10,14,39,0.95); overflow-y: auto; }
 .go-title {
   font-size: 28px; font-weight: 800; margin-bottom: 6px;
   background: linear-gradient(135deg, #ff6b6b, #ff8e53);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-.go-sub { font-size: 13px; color: #6b7db3; margin-bottom: 20px; }
+.go-sub { font-size: 13px; color: #6b7db3; margin-bottom: 16px; }
+.go-player { font-size: 16px; font-weight: 700; color: #00aaff; margin-bottom: 4px; }
 .go-score { font-size: 44px; font-weight: 800; color: #00ff88; }
-.go-score-label { font-size: 11px; color: #4a5580; margin-bottom: 20px; }
-.go-stats { display: flex; gap: 28px; margin-bottom: 28px; }
+.go-score-label { font-size: 11px; color: #4a5580; margin-bottom: 4px; }
+.go-best { font-size: 13px; color: #ffaa00; margin-bottom: 16px; }
+.go-stats { display: flex; gap: 28px; margin-bottom: 20px; }
 .go-stat { text-align: center; }
 .go-stat-val { font-size: 22px; font-weight: 700; color: #00aaff; }
 .go-stat-lbl { font-size: 10px; color: #4a5580; }
+
+/* ── Leaderboard ─────────────────────────────────────────────────────── */
+.lb-title {
+  font-size: 16px; font-weight: 800; color: #00ff88;
+  margin-bottom: 10px; letter-spacing: 1px;
+}
+.lb-table {
+  width: 100%; max-width: 320px; margin-bottom: 20px;
+}
+.lb-row {
+  display: flex; align-items: center; padding: 6px 12px;
+  border-radius: 8px; margin-bottom: 3px;
+  background: rgba(255,255,255,0.03);
+}
+.lb-row.you {
+  background: rgba(0,255,136,0.1);
+  border: 1px solid rgba(0,255,136,0.25);
+}
+.lb-row.gold { background: rgba(255,215,0,0.08); }
+.lb-rank {
+  width: 28px; font-size: 14px; font-weight: 800;
+  color: #4a5580; text-align: center;
+}
+.lb-row.gold .lb-rank { color: #ffd700; }
+.lb-row:nth-child(2) .lb-rank { color: #c0c0c0; }
+.lb-row:nth-child(3) .lb-rank { color: #cd7f32; }
+.lb-name {
+  flex: 1; font-size: 13px; font-weight: 600;
+  color: #b0bce0; padding: 0 8px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.lb-row.you .lb-name { color: #00ff88; }
+.lb-pts {
+  font-size: 14px; font-weight: 800; color: #00aaff;
+}
+.lb-row.you .lb-pts { color: #00ff88; }
+.lb-empty {
+  font-size: 12px; color: #4a5580; text-align: center;
+  padding: 12px; font-style: italic;
+}
 </style>
 </head>
 <body>
@@ -265,6 +331,15 @@ html, body {
   <div class="splash-title">CYBERSHIELD</div>
   <div class="splash-sub">D E F E N S E</div>
   <button class="btn btn-play" id="btn-howto">▶ PLAY</button>
+</div>
+
+<!-- ENTER NAME -->
+<div id="name-screen" class="screen">
+  <div class="name-title">ENTER YOUR CALLSIGN</div>
+  <div class="name-sub">Choose a name for the leaderboard</div>
+  <input type="text" class="name-input" id="name-input" placeholder="Agent name..." maxlength="16" autocomplete="off" spellcheck="false">
+  <div class="name-error" id="name-error"></div>
+  <button class="btn btn-play" id="btn-name" style="margin-top:16px">CONTINUE</button>
 </div>
 
 <!-- HOW TO PLAY -->
@@ -292,6 +367,7 @@ html, body {
     <div class="hud-item"><div class="hud-label">Time</div><div class="hud-val" id="h-time">5:00</div></div>
     <div class="hud-item"><div class="hud-label">Combo</div><div class="hud-val" id="h-combo">x1</div></div>
   </div>
+  <div class="hud-name" id="hud-name"></div>
   <div class="timer-bar"><div class="timer-fill" id="timer-fill"></div></div>
   <div class="progress"><div class="progress-fill" id="prog"></div></div>
   <div class="board-wrap"><div class="board" id="board"></div></div>
@@ -302,14 +378,17 @@ html, body {
 <div id="gameover-screen" class="screen">
   <div class="go-title">TIME'S UP!</div>
   <div class="go-sub">Your shields have expired!</div>
+  <div class="go-player" id="go-player"></div>
   <div class="go-score" id="go-score">0</div>
   <div class="go-score-label">THREATS NEUTRALISED</div>
+  <div class="go-best" id="go-best"></div>
   <div class="go-stats">
     <div class="go-stat"><div class="go-stat-val" id="go-level">1</div><div class="go-stat-lbl">Level</div></div>
     <div class="go-stat"><div class="go-stat-val" id="go-combo">1</div><div class="go-stat-lbl">Best Combo</div></div>
     <div class="go-stat"><div class="go-stat-val" id="go-matches">0</div><div class="go-stat-lbl">Matches</div></div>
-    <div class="go-stat"><div class="go-stat-val" id="go-time">0:00</div><div class="go-stat-lbl">Time Played</div></div>
   </div>
+  <div class="lb-title">LEADERBOARD</div>
+  <div class="lb-table" id="lb-table"></div>
   <button class="btn btn-play" id="btn-retry">🔄 PLAY AGAIN</button>
 </div>
 
@@ -317,13 +396,14 @@ html, body {
 
 <script>
 // ═════════════════════════════════════════════════════════════════════
-// CyberShield Defense v3 — Timer + Smooth Animations
+// CyberShield Defense v4 — Leaderboard + Username
 // ═════════════════════════════════════════════════════════════════════
 (() => {
 const COLS = 7, ROWS = 8;
 const ICONS = ['🛡️','🔒','🔑','🔥'];
 const ICONS_EXTRA = ['🐛','💀'];
-const GAME_DURATION = 300; // 5 minutes in seconds
+const GAME_DURATION = 300;
+const MAX_LEADERBOARD = 10;
 const TIPS = [
   "🛡️ Use a unique password for every account",
   "🔒 Enable two-factor authentication everywhere",
@@ -341,32 +421,157 @@ let touchStartX, touchStartY, touchStartCell;
 let cellSize;
 let timeRemaining, timerInterval, gameStartTime;
 let gameOver = false;
+let playerName = '';
 
 const $ = id => document.getElementById(id);
 const board = $('board');
 
-// ── Screens ──
+// ═══════════════════════════════════════════════════════════════════
+// Storage helper — tries localStorage, falls back to in-memory
+// ═══════════════════════════════════════════════════════════════════
+const storage = (() => {
+  const mem = {};
+  let useLocal = false;
+  try {
+    const t = '__cstest__';
+    localStorage.setItem(t, '1');
+    localStorage.removeItem(t);
+    useLocal = true;
+  } catch(e) {}
+  return {
+    get(key) {
+      try {
+        if (useLocal) {
+          const v = localStorage.getItem(key);
+          return v ? JSON.parse(v) : null;
+        }
+      } catch(e) {}
+      return mem[key] || null;
+    },
+    set(key, val) {
+      try {
+        if (useLocal) localStorage.setItem(key, JSON.stringify(val));
+      } catch(e) {}
+      mem[key] = val;
+    }
+  };
+})();
+
+// ═══════════════════════════════════════════════════════════════════
+// Leaderboard
+// ═══════════════════════════════════════════════════════════════════
+function getLeaderboard() {
+  return storage.get('cs_leaderboard') || [];
+}
+
+function addToLeaderboard(name, newScore, lvl) {
+  const lb = getLeaderboard();
+  lb.push({ name, score: newScore, level: lvl, date: Date.now() });
+  // Sort descending by score
+  lb.sort((a, b) => b.score - a.score);
+  // Keep top entries only
+  const trimmed = lb.slice(0, MAX_LEADERBOARD);
+  storage.set('cs_leaderboard', trimmed);
+  return trimmed;
+}
+
+function getPersonalBest(name) {
+  const lb = getLeaderboard();
+  const mine = lb.filter(e => e.name.toLowerCase() === name.toLowerCase());
+  if (mine.length === 0) return 0;
+  return Math.max(...mine.map(e => e.score));
+}
+
+function renderLeaderboard(currentName, currentScore) {
+  const lb = getLeaderboard();
+  const table = $('lb-table');
+  if (lb.length === 0) {
+    table.innerHTML = '<div class="lb-empty">No scores yet — you\'ll be first!</div>';
+    return;
+  }
+  let html = '';
+  lb.forEach((entry, i) => {
+    const isYou = entry.name.toLowerCase() === currentName.toLowerCase() && entry.score === currentScore;
+    const isGold = i === 0;
+    let cls = 'lb-row';
+    if (isYou) cls += ' you';
+    else if (isGold) cls += ' gold';
+    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1);
+    html += '<div class="' + cls + '">';
+    html += '<div class="lb-rank">' + medal + '</div>';
+    html += '<div class="lb-name">' + escHtml(entry.name) + '</div>';
+    html += '<div class="lb-pts">' + entry.score.toLocaleString() + '</div>';
+    html += '</div>';
+  });
+  table.innerHTML = html;
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Screens
+// ═══════════════════════════════════════════════════════════════════
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   $(id).classList.add('active');
 }
-$('btn-howto').onclick = () => showScreen('howto-screen');
+
+// Splash -> Name screen
+$('btn-howto').onclick = () => {
+  // Pre-fill with saved name
+  const saved = storage.get('cs_playername');
+  if (saved) $('name-input').value = saved;
+  showScreen('name-screen');
+  setTimeout(() => $('name-input').focus(), 100);
+};
+
+// Name -> How to play
+$('btn-name').onclick = submitName;
+$('name-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') submitName();
+});
+
+function submitName() {
+  const raw = $('name-input').value.trim();
+  if (raw.length < 2) {
+    $('name-error').textContent = 'Name must be at least 2 characters';
+    return;
+  }
+  if (raw.length > 16) {
+    $('name-error').textContent = 'Name must be 16 characters or less';
+    return;
+  }
+  $('name-error').textContent = '';
+  playerName = raw;
+  storage.set('cs_playername', playerName);
+  showScreen('howto-screen');
+}
+
 $('btn-start').onclick = startGame;
 $('btn-retry').onclick = startGame;
 
-// ── Init ──
+// ═══════════════════════════════════════════════════════════════════
+// Game Init
+// ═══════════════════════════════════════════════════════════════════
 function startGame() {
   score = 0; level = 1; combo = 0; maxCombo = 0;
   totalMatches = 0; targetScore = 500; animating = false; selectedCell = null;
   timeRemaining = GAME_DURATION; gameOver = false;
   gameStartTime = Date.now();
   showScreen('game-screen');
+  $('hud-name').textContent = '🛡️ Agent: ' + playerName;
   sizeBoardAndBuild();
   window.onresize = sizeBoardAndBuild;
-  // Start timer
   clearInterval(timerInterval);
   timerInterval = setInterval(tickTimer, 1000);
-  // Tips
+  // Reset timer bar
+  const fill = $('timer-fill');
+  fill.style.width = '100%';
+  fill.classList.remove('warn', 'danger');
   clearInterval(tipTimer);
   tipTimer = setInterval(showTip, 18000);
   setTimeout(showTip, 4000);
@@ -378,7 +583,6 @@ function tickTimer() {
   timeRemaining--;
   updateHUD();
 
-  // Timer bar
   const pct = (timeRemaining / GAME_DURATION) * 100;
   const fill = $('timer-fill');
   fill.style.width = pct + '%';
@@ -386,14 +590,11 @@ function tickTimer() {
   if (pct <= 10) fill.classList.add('danger');
   else if (pct <= 25) fill.classList.add('warn');
 
-  // Warnings
   if (timeRemaining === 60) showBanner('⚠️ 1 MINUTE LEFT!');
   if (timeRemaining === 30) showBanner('⏱️ 30 SECONDS!');
   if (timeRemaining === 10) showBanner('🔥 HURRY! 10s!');
 
-  if (timeRemaining <= 0) {
-    endGame();
-  }
+  if (timeRemaining <= 0) endGame();
 }
 
 function formatTime(secs) {
@@ -404,7 +605,7 @@ function formatTime(secs) {
 
 function sizeBoardAndBuild() {
   const maxW = Math.min(window.innerWidth - 8, 420);
-  const maxH = window.innerHeight - 100;
+  const maxH = window.innerHeight - 110;
   cellSize = Math.floor(Math.min(maxW / COLS, maxH / ROWS));
   board.style.gridTemplateColumns = `repeat(${COLS}, ${cellSize}px)`;
   board.style.gridTemplateRows = `repeat(${ROWS}, ${cellSize}px)`;
@@ -430,9 +631,7 @@ function initGrid() {
   grid = [];
   for (let r = 0; r < ROWS; r++) {
     grid[r] = [];
-    for (let c = 0; c < COLS; c++) {
-      grid[r][c] = randIcon();
-    }
+    for (let c = 0; c < COLS; c++) grid[r][c] = randIcon();
   }
   let clean = false;
   while (!clean) {
@@ -476,8 +675,7 @@ function updateCell(r, c) {
   const idx = r * COLS + c;
   const cell = board.children[idx];
   if (!cell) return;
-  const emoji = cell.querySelector('.emoji');
-  emoji.textContent = grid[r][c];
+  cell.querySelector('.emoji').textContent = grid[r][c];
 }
 
 function getCell(r, c) {
@@ -561,16 +759,13 @@ function trySwap(r1, c1, r2, c2, dr, dc) {
   animating = true;
   combo = 0;
 
-  // Swap in grid
   const tmp = grid[r1][c1];
   grid[r1][c1] = grid[r2][c2];
   grid[r2][c2] = tmp;
 
-  // Animate the swap visually
   updateCell(r1, c1);
   updateCell(r2, c2);
 
-  // Add directional swap animation classes
   const cell1 = getCell(r1, c1);
   const cell2 = getCell(r2, c2);
   if (dc === 1)       { cell1.classList.add('swap-right'); cell2.classList.add('swap-left'); }
@@ -579,18 +774,15 @@ function trySwap(r1, c1, r2, c2, dr, dc) {
   else if (dr === -1) { cell1.classList.add('swap-up');    cell2.classList.add('swap-down'); }
 
   setTimeout(() => {
-    // Remove swap classes
     cell1.className = 'cell';
     cell2.className = 'cell';
 
     const matches = findAllMatches();
     if (matches.length === 0) {
-      // Swap back
       grid[r2][c2] = grid[r1][c1];
       grid[r1][c1] = tmp;
       updateCell(r1, c1);
       updateCell(r2, c2);
-      // Shake
       getCell(r1, c1)?.classList.add('invalid');
       getCell(r2, c2)?.classList.add('invalid');
       setTimeout(() => {
@@ -643,40 +835,29 @@ function processMatches(matches) {
   if (combo >= 2) showBanner('⚡ ' + combo + 'x COMBO! +' + pts);
   if (matches.length >= 5) showBanner('🛡️ SHIELD ACTIVATED!');
 
-  // Levelling up gives bonus time
   if (score >= targetScore) {
     level++;
-    timeRemaining = Math.min(timeRemaining + 30, GAME_DURATION); // +30s bonus, capped
+    timeRemaining = Math.min(timeRemaining + 30, GAME_DURATION);
     targetScore = Math.floor(targetScore * 1.8);
     showBanner('🚀 LEVEL ' + level + '! +30s');
   }
   updateHUD();
 
-  // Step 1: Animate matched cells (pop + glow)
   matches.forEach(idx => {
     const cell = board.children[idx];
-    if (cell) {
-      cell.classList.add('matched');
-    }
+    if (cell) cell.classList.add('matched');
   });
 
-  // Step 2: After match animation, apply gravity with distance-based fall
   setTimeout(() => {
-    // Clear matched cells in grid
     matches.forEach(idx => {
       const r = Math.floor(idx / COLS), c = idx % COLS;
       grid[r][c] = null;
     });
 
-    // Track how far each piece needs to fall per column
-    const fallDistances = {}; // key: "r,c" => distance fallen
+    const fallDistances = {};
 
     for (let c = 0; c < COLS; c++) {
       let writeRow = ROWS - 1;
-      const oldColumn = [];
-      for (let r = 0; r < ROWS; r++) oldColumn[r] = grid[r][c];
-
-      // Compact: move non-null pieces down
       for (let r = ROWS - 1; r >= 0; r--) {
         if (grid[r][c] !== null) {
           if (writeRow !== r) {
@@ -687,49 +868,35 @@ function processMatches(matches) {
           writeRow--;
         }
       }
-      // Fill empty top cells with new icons
       for (let r = writeRow; r >= 0; r--) {
         grid[r][c] = randIcon();
-        // New pieces fall from above the board: distance = writeRow+1 rows down from top of empty space
         fallDistances[r + ',' + c] = writeRow + 1 - r + (ROWS - 1 - writeRow);
       }
     }
 
-    // Step 3: Update all cells and apply distance-based falling animation
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
         const idx = r * COLS + c;
         const cell = board.children[idx];
         cell.className = 'cell';
-        const emoji = cell.querySelector('.emoji');
-        emoji.textContent = grid[r][c];
-
+        cell.querySelector('.emoji').textContent = grid[r][c];
         const dist = fallDistances[r + ',' + c];
-        if (dist && dist > 0) {
-          const fallClass = 'fall-' + Math.min(dist, 8);
-          cell.classList.add(fallClass);
-        }
+        if (dist && dist > 0) cell.classList.add('fall-' + Math.min(dist, 8));
       }
     }
 
-    // Step 4: After fall animations finish, add landing bounce and check cascades
-    const maxFallTime = 460; // max fall animation duration
+    const maxFallTime = 460;
     setTimeout(() => {
-      // Add landing bounce to cells that just fell
       for (let r = 0; r < ROWS; r++) {
         for (let c = 0; c < COLS; c++) {
           const cell = getCell(r, c);
           const hasFall = [...cell.classList].some(cl => cl.startsWith('fall-'));
-          if (hasFall) {
-            cell.className = 'cell landed';
-          }
+          if (hasFall) cell.className = 'cell landed';
         }
       }
 
-      // Brief bounce, then check for cascading matches
       setTimeout(() => {
         board.querySelectorAll('.landed').forEach(el => el.classList.remove('landed'));
-
         const newMatches = findAllMatches();
         if (newMatches.length > 0) {
           processMatches(newMatches);
@@ -739,20 +906,35 @@ function processMatches(matches) {
         }
       }, 200);
     }, maxFallTime);
-  }, 350); // match pop animation duration
+  }, 350);
 }
 
-// ── Game Logic ──
+// ── End Game ──
 function endGame() {
   gameOver = true;
   clearInterval(timerInterval);
   clearInterval(tipTimer);
-  const elapsed = Math.floor((Date.now() - gameStartTime) / 1000);
+
+  // Add score to leaderboard
+  const lb = addToLeaderboard(playerName, score, level);
+  const best = getPersonalBest(playerName);
+
+  $('go-player').textContent = '🛡️ Agent: ' + playerName;
   $('go-score').textContent = score.toLocaleString();
   $('go-level').textContent = level;
   $('go-combo').textContent = maxCombo + 'x';
   $('go-matches').textContent = totalMatches;
-  $('go-time').textContent = formatTime(Math.min(elapsed, GAME_DURATION));
+
+  if (score >= best) {
+    $('go-best').textContent = '🏆 NEW PERSONAL BEST!';
+    $('go-best').style.color = '#ffd700';
+  } else {
+    $('go-best').textContent = 'Personal best: ' + best.toLocaleString();
+    $('go-best').style.color = '#ffaa00';
+  }
+
+  renderLeaderboard(playerName, score);
+
   try { if (window.TelegramGameProxy) window.TelegramGameProxy.shareScore(); } catch(e) {}
   setTimeout(() => showScreen('gameover-screen'), 500);
 }
@@ -765,7 +947,6 @@ function updateHUD() {
   $('h-combo').textContent = 'x' + Math.max(combo, 1);
   $('prog').style.width = Math.min(100, (score / targetScore) * 100) + '%';
 
-  // Color the time display when running low
   const timeEl = $('h-time');
   timeEl.classList.remove('warn', 'red');
   if (timeRemaining <= 30) timeEl.classList.add('red');
