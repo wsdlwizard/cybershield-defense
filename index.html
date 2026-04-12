@@ -263,6 +263,40 @@ html, body {
 }
 .tip.show { transform: translateY(0); }
 
+/* ── Power-up Bar ────────────────────────────────────────────────────── */
+.powerup-bar {
+  display: flex; justify-content: center; gap: 8px;
+  padding: 6px 12px; flex-shrink: 0;
+  background: rgba(10,14,39,0.9);
+  border-bottom: 1px solid rgba(0,255,136,0.08);
+}
+.pu-btn {
+  display: flex; align-items: center; gap: 4px;
+  padding: 5px 10px; border-radius: 8px;
+  border: 1px solid rgba(0,255,136,0.2);
+  background: rgba(0,255,136,0.06);
+  color: #b0bce0; font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+}
+.pu-btn:active { transform: scale(0.95); }
+.pu-btn.available { border-color: rgba(0,255,136,0.5); color: #00ff88; }
+.pu-btn.available:hover { background: rgba(0,255,136,0.15); }
+.pu-btn.empty { opacity: 0.35; pointer-events: none; }
+.pu-btn .pu-icon { font-size: 16px; }
+.pu-btn .pu-count {
+  background: rgba(0,255,136,0.2); padding: 1px 6px;
+  border-radius: 10px; font-size: 11px; font-weight: 800;
+}
+.pu-btn.available .pu-count { background: rgba(0,255,136,0.35); color: #fff; }
+.pu-flash {
+  animation: puFlash 0.5s ease;
+}
+@keyframes puFlash {
+  0% { box-shadow: 0 0 0 0 rgba(0,255,136,0.6); }
+  50% { box-shadow: 0 0 20px 4px rgba(0,255,136,0.4); }
+  100% { box-shadow: 0 0 0 0 rgba(0,255,136,0); }
+}
+
 /* ── Game Over ───────────────────────────────────────────────────────── */
 #gameover-screen { background: rgba(10,14,39,0.95); overflow-y: auto; }
 .go-title {
@@ -368,6 +402,11 @@ html, body {
     <div class="hud-item"><div class="hud-label">Combo</div><div class="hud-val" id="h-combo">x1</div></div>
   </div>
   <div class="hud-name" id="hud-name"></div>
+  <div class="powerup-bar" id="powerup-bar">
+    <button class="pu-btn empty" id="pu-tb" onclick="usePowerup('time_boost')"><span class="pu-icon">⏱️</span> +60s <span class="pu-count" id="pu-tb-count">0</span></button>
+    <button class="pu-btn empty" id="pu-sb" onclick="usePowerup('shield_bomb')"><span class="pu-icon">💣</span> Bomb <span class="pu-count" id="pu-sb-count">0</span></button>
+    <button class="pu-btn empty" id="pu-fr" onclick="usePowerup('freeze')"><span class="pu-icon">🧊</span> Freeze <span class="pu-count" id="pu-fr-count">0</span></button>
+  </div>
   <div class="timer-bar"><div class="timer-fill" id="timer-fill"></div></div>
   <div class="progress"><div class="progress-fill" id="prog"></div></div>
   <div class="board-wrap"><div class="board" id="board"></div></div>
@@ -422,6 +461,41 @@ let cellSize;
 let timeRemaining, timerInterval, gameStartTime;
 let gameOver = false;
 let playerName = '';
+let frozen = false, frozenTimer = null;
+
+// Power-up inventory (loaded from URL params set by bot)
+const powerups = { time_boost: 0, shield_bomb: 0, freeze: 0 };
+
+// Read power-up counts from URL (bot passes ?tb=X&sb=Y&fr=Z)
+function loadPowerupsFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  powerups.time_boost = parseInt(params.get('tb')) || 0;
+  powerups.shield_bomb = parseInt(params.get('sb')) || 0;
+  powerups.freeze = parseInt(params.get('fr')) || 0;
+  // Also try to get name from URL
+  const urlName = params.get('name');
+  if (urlName) {
+    playerName = decodeURIComponent(urlName);
+    storage.set('cs_playername', playerName);
+  }
+  updatePowerupUI();
+}
+
+function updatePowerupUI() {
+  const items = [
+    { key: 'time_boost', btn: 'pu-tb', count: 'pu-tb-count' },
+    { key: 'shield_bomb', btn: 'pu-sb', count: 'pu-sb-count' },
+    { key: 'freeze', btn: 'pu-fr', count: 'pu-fr-count' },
+  ];
+  items.forEach(item => {
+    const btn = $(item.btn);
+    const countEl = $(item.count);
+    const qty = powerups[item.key];
+    countEl.textContent = qty;
+    btn.classList.remove('available', 'empty');
+    btn.classList.add(qty > 0 ? 'available' : 'empty');
+  });
+}
 
 const $ = id => document.getElementById(id);
 const board = $('board');
@@ -520,9 +594,15 @@ function showScreen(id) {
   $(id).classList.add('active');
 }
 
-// Splash -> Name screen
+// Load power-ups from URL on page load
+loadPowerupsFromURL();
+
+// Splash -> Name screen (skip if we got name from URL)
 $('btn-howto').onclick = () => {
-  // Pre-fill with saved name
+  if (playerName) {
+    showScreen('howto-screen');
+    return;
+  }
   const saved = storage.get('cs_playername');
   if (saved) $('name-input').value = saved;
   showScreen('name-screen');
@@ -580,6 +660,7 @@ function startGame() {
 
 function tickTimer() {
   if (gameOver) return;
+  if (frozen) return; // Time Freeze power-up active
   timeRemaining--;
   updateHUD();
 
@@ -853,61 +934,135 @@ function processMatches(matches) {
       const r = Math.floor(idx / COLS), c = idx % COLS;
       grid[r][c] = null;
     });
-
-    const fallDistances = {};
-
-    for (let c = 0; c < COLS; c++) {
-      let writeRow = ROWS - 1;
-      for (let r = ROWS - 1; r >= 0; r--) {
-        if (grid[r][c] !== null) {
-          if (writeRow !== r) {
-            grid[writeRow][c] = grid[r][c];
-            grid[r][c] = null;
-            fallDistances[writeRow + ',' + c] = writeRow - r;
-          }
-          writeRow--;
-        }
-      }
-      for (let r = writeRow; r >= 0; r--) {
-        grid[r][c] = randIcon();
-        fallDistances[r + ',' + c] = writeRow + 1 - r + (ROWS - 1 - writeRow);
-      }
-    }
-
-    for (let r = 0; r < ROWS; r++) {
-      for (let c = 0; c < COLS; c++) {
-        const idx = r * COLS + c;
-        const cell = board.children[idx];
-        cell.className = 'cell';
-        cell.querySelector('.emoji').textContent = grid[r][c];
-        const dist = fallDistances[r + ',' + c];
-        if (dist && dist > 0) cell.classList.add('fall-' + Math.min(dist, 8));
-      }
-    }
-
-    const maxFallTime = 460;
-    setTimeout(() => {
-      for (let r = 0; r < ROWS; r++) {
-        for (let c = 0; c < COLS; c++) {
-          const cell = getCell(r, c);
-          const hasFall = [...cell.classList].some(cl => cl.startsWith('fall-'));
-          if (hasFall) cell.className = 'cell landed';
-        }
-      }
-
-      setTimeout(() => {
-        board.querySelectorAll('.landed').forEach(el => el.classList.remove('landed'));
-        const newMatches = findAllMatches();
-        if (newMatches.length > 0) {
-          processMatches(newMatches);
-        } else {
-          board.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
-          animating = false;
-        }
-      }, 200);
-    }, maxFallTime);
+    applyGravity();
   }, 350);
 }
+
+// ── Shared gravity + cascade logic ──
+function applyGravity() {
+  const fallDistances = {};
+
+  for (let c = 0; c < COLS; c++) {
+    let writeRow = ROWS - 1;
+    for (let r = ROWS - 1; r >= 0; r--) {
+      if (grid[r][c] !== null) {
+        if (writeRow !== r) {
+          grid[writeRow][c] = grid[r][c];
+          grid[r][c] = null;
+          fallDistances[writeRow + ',' + c] = writeRow - r;
+        }
+        writeRow--;
+      }
+    }
+    for (let r = writeRow; r >= 0; r--) {
+      grid[r][c] = randIcon();
+      fallDistances[r + ',' + c] = writeRow + 1 - r + (ROWS - 1 - writeRow);
+    }
+  }
+
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const idx = r * COLS + c;
+      const cell = board.children[idx];
+      cell.className = 'cell';
+      cell.querySelector('.emoji').textContent = grid[r][c];
+      const dist = fallDistances[r + ',' + c];
+      if (dist && dist > 0) cell.classList.add('fall-' + Math.min(dist, 8));
+    }
+  }
+
+  const maxFallTime = 460;
+  setTimeout(() => {
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        const cell = getCell(r, c);
+        const hasFall = [...cell.classList].some(cl => cl.startsWith('fall-'));
+        if (hasFall) cell.className = 'cell landed';
+      }
+    }
+
+    setTimeout(() => {
+      board.querySelectorAll('.landed').forEach(el => el.classList.remove('landed'));
+      const newMatches = findAllMatches();
+      if (newMatches.length > 0) {
+        processMatches(newMatches);
+      } else {
+        board.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+        animating = false;
+      }
+    }, 200);
+  }, maxFallTime);
+}
+
+// ── Power-up Activation (called from HTML onclick) ──
+// Must be on window scope so onclick can call it
+window.usePowerup = function(key) {
+  if (gameOver || powerups[key] <= 0) return;
+
+  powerups[key]--;
+  updatePowerupUI();
+
+  // Flash the button
+  const btnMap = { time_boost: 'pu-tb', shield_bomb: 'pu-sb', freeze: 'pu-fr' };
+  const btn = $(btnMap[key]);
+  btn.classList.add('pu-flash');
+  setTimeout(() => btn.classList.remove('pu-flash'), 500);
+
+  if (key === 'time_boost') {
+    timeRemaining = Math.min(timeRemaining + 60, GAME_DURATION);
+    showBanner('⏱️ +60 SECONDS!');
+    updateHUD();
+  }
+  else if (key === 'shield_bomb') {
+    // Pick the most common icon on the board and clear it
+    const counts = {};
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        const icon = grid[r][c];
+        if (icon) counts[icon] = (counts[icon] || 0) + 1;
+      }
+    }
+    let targetIcon = null, maxCount = 0;
+    for (const [icon, count] of Object.entries(counts)) {
+      if (count > maxCount) { maxCount = count; targetIcon = icon; }
+    }
+    if (targetIcon) {
+      const bombMatches = [];
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          if (grid[r][c] === targetIcon) bombMatches.push(r * COLS + c);
+        }
+      }
+      const pts = bombMatches.length * 15;
+      score += pts;
+      totalMatches += bombMatches.length;
+      showBanner('💣 BOMB! +' + pts);
+      // Animate and process like a match
+      animating = true;
+      bombMatches.forEach(idx => {
+        const cell = board.children[idx];
+        if (cell) cell.classList.add('matched');
+      });
+      setTimeout(() => {
+        bombMatches.forEach(idx => {
+          const r = Math.floor(idx / COLS), c = idx % COLS;
+          grid[r][c] = null;
+        });
+        applyGravity(bombMatches);
+      }, 350);
+      updateHUD();
+    }
+  }
+  else if (key === 'freeze') {
+    frozen = true;
+    showBanner('🧊 TIME FROZEN!');
+    clearTimeout(frozenTimer);
+    frozenTimer = setTimeout(() => {
+      frozen = false;
+      showBanner('⏱️ Timer resumed!');
+    }, 20000);
+  }
+};
 
 // ── End Game ──
 function endGame() {
