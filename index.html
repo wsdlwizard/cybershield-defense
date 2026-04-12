@@ -443,6 +443,8 @@ const ICONS = ['🛡️','🔒','🔑','🔥'];
 const ICONS_EXTRA = ['🐛','💀'];
 const GAME_DURATION = 300;
 const MAX_LEADERBOARD = 10;
+// API URL — set to your public API endpoint (ngrok, cloudflare tunnel, or server)
+const API_URL = (new URLSearchParams(window.location.search).get('api')) || '';
 const TIPS = [
   "🛡️ Use a unique password for every account",
   "🔒 Enable two-factor authentication everywhere",
@@ -532,40 +534,86 @@ const storage = (() => {
 })();
 
 // ═══════════════════════════════════════════════════════════════════
-// Leaderboard
+// Leaderboard (API-backed with localStorage fallback)
 // ═══════════════════════════════════════════════════════════════════
-function getLeaderboard() {
+async function apiPost(endpoint, data) {
+  if (!API_URL) return null;
+  try {
+    const res = await fetch(API_URL + endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch(e) { return null; }
+}
+
+async function apiGet(endpoint) {
+  if (!API_URL) return null;
+  try {
+    const res = await fetch(API_URL + endpoint);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch(e) { return null; }
+}
+
+// Local fallback
+function getLocalLeaderboard() {
   return storage.get('cs_leaderboard') || [];
 }
-
-function addToLeaderboard(name, newScore, lvl) {
-  const lb = getLeaderboard();
+function addLocalScore(name, newScore, lvl) {
+  const lb = getLocalLeaderboard();
   lb.push({ name, score: newScore, level: lvl, date: Date.now() });
-  // Sort descending by score
   lb.sort((a, b) => b.score - a.score);
-  // Keep top entries only
-  const trimmed = lb.slice(0, MAX_LEADERBOARD);
-  storage.set('cs_leaderboard', trimmed);
-  return trimmed;
+  storage.set('cs_leaderboard', lb.slice(0, MAX_LEADERBOARD));
+  return lb;
 }
-
-function getPersonalBest(name) {
-  const lb = getLeaderboard();
+function getLocalPersonalBest(name) {
+  const lb = getLocalLeaderboard();
   const mine = lb.filter(e => e.name.toLowerCase() === name.toLowerCase());
-  if (mine.length === 0) return 0;
-  return Math.max(...mine.map(e => e.score));
+  return mine.length ? Math.max(...mine.map(e => e.score)) : 0;
 }
 
-function renderLeaderboard(currentName, currentScore) {
-  const lb = getLeaderboard();
+async function validateNameWithAPI(name) {
+  const result = await apiPost('/api/name', { username: name });
+  if (!result) return { approved: true, reason: 'offline' }; // allow if API unreachable
+  return result;
+}
+
+async function submitScoreToAPI(name, finalScore, lvl, bestCombo, totalM) {
+  const result = await apiPost('/api/score', {
+    username: name, score: finalScore, level: lvl,
+    combo: bestCombo, matches: totalM,
+  });
+  // Always save locally too
+  addLocalScore(name, finalScore, lvl);
+  return result;
+}
+
+async function fetchAndRenderLeaderboard(currentName, currentScore) {
   const table = $('lb-table');
-  if (lb.length === 0) {
+  table.innerHTML = '<div class="lb-empty">Loading leaderboard...</div>';
+
+  // Try API first
+  const data = await apiGet('/api/leaderboard?limit=10');
+  let entries;
+  if (data && data.leaderboard && data.leaderboard.length > 0) {
+    entries = data.leaderboard;
+  } else {
+    // Fallback to local
+    const local = getLocalLeaderboard().slice(0, MAX_LEADERBOARD);
+    entries = local.map((e, i) => ({ rank: i+1, username: e.name, score: e.score, level: e.level || 1 }));
+  }
+
+  if (entries.length === 0) {
     table.innerHTML = '<div class="lb-empty">No scores yet — you\'ll be first!</div>';
     return;
   }
+
   let html = '';
-  lb.forEach((entry, i) => {
-    const isYou = entry.name.toLowerCase() === currentName.toLowerCase() && entry.score === currentScore;
+  entries.forEach((entry, i) => {
+    const isYou = entry.username.toLowerCase() === currentName.toLowerCase();
     const isGold = i === 0;
     let cls = 'lb-row';
     if (isYou) cls += ' you';
@@ -573,7 +621,7 @@ function renderLeaderboard(currentName, currentScore) {
     const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1);
     html += '<div class="' + cls + '">';
     html += '<div class="lb-rank">' + medal + '</div>';
-    html += '<div class="lb-name">' + escHtml(entry.name) + '</div>';
+    html += '<div class="lb-name">' + escHtml(entry.username) + '</div>';
     html += '<div class="lb-pts">' + entry.score.toLocaleString() + '</div>';
     html += '</div>';
   });
@@ -615,7 +663,7 @@ $('name-input').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') submitName();
 });
 
-function submitName() {
+async function submitName() {
   const raw = $('name-input').value.trim();
   if (raw.length < 2) {
     $('name-error').textContent = 'Name must be at least 2 characters';
@@ -625,6 +673,18 @@ function submitName() {
     $('name-error').textContent = 'Name must be 16 characters or less';
     return;
   }
+
+  // Moderate username via API (Haiku check)
+  $('name-error').textContent = 'Checking name...';
+  $('btn-name').disabled = true;
+  const result = await validateNameWithAPI(raw);
+  $('btn-name').disabled = false;
+
+  if (!result.approved) {
+    $('name-error').textContent = 'That name is not allowed. Please choose another.';
+    return;
+  }
+
   $('name-error').textContent = '';
   playerName = raw;
   storage.set('cs_playername', playerName);
@@ -1065,14 +1125,15 @@ window.usePowerup = function(key) {
 };
 
 // ── End Game ──
-function endGame() {
+async function endGame() {
   gameOver = true;
   clearInterval(timerInterval);
   clearInterval(tipTimer);
 
-  // Add score to leaderboard
-  const lb = addToLeaderboard(playerName, score, level);
-  const best = getPersonalBest(playerName);
+  // Submit score to API + local storage
+  const apiResult = await submitScoreToAPI(playerName, score, level, maxCombo, totalMatches);
+  const localBest = getLocalPersonalBest(playerName);
+  const isPB = apiResult ? apiResult.is_personal_best : (score >= localBest);
 
   $('go-player').textContent = '🛡️ Agent: ' + playerName;
   $('go-score').textContent = score.toLocaleString();
@@ -1080,15 +1141,18 @@ function endGame() {
   $('go-combo').textContent = maxCombo + 'x';
   $('go-matches').textContent = totalMatches;
 
-  if (score >= best) {
+  if (isPB) {
     $('go-best').textContent = '🏆 NEW PERSONAL BEST!';
     $('go-best').style.color = '#ffd700';
   } else {
-    $('go-best').textContent = 'Personal best: ' + best.toLocaleString();
+    $('go-best').textContent = apiResult
+      ? 'Rank: #' + apiResult.rank
+      : 'Personal best: ' + localBest.toLocaleString();
     $('go-best').style.color = '#ffaa00';
   }
 
-  renderLeaderboard(playerName, score);
+  // Fetch and render global leaderboard
+  await fetchAndRenderLeaderboard(playerName, score);
 
   try { if (window.TelegramGameProxy) window.TelegramGameProxy.shareScore(); } catch(e) {}
   setTimeout(() => showScreen('gameover-screen'), 500);
